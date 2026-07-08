@@ -10,9 +10,15 @@ export const RegisterStep2 = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
+  const sleep = (msec: number) => new Promise((resolve) => setTimeout(resolve, msec));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    await sleep(500);
+    
     setErrorMessage("");
     setIsSubmitting(true);
 
@@ -34,6 +40,8 @@ export const RegisterStep2 = () => {
         );
       }
     } finally {
+      await sleep(2000);
+      setLoading(false);
       setIsSubmitting(false);
     }
   };
@@ -94,9 +102,14 @@ export const RegisterStep2 = () => {
             <button
               type="submit"
               disabled={!canSubmit}
+              onClick={() => setLoading(true)}
               className="w-full mt-20 rounded-full bg-black px-5 py-2 font-bold text-white transition hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {isSubmitting ? "登録中..." : "登録する"}
+              {loading ? (
+                <div className="animate-spin h-5 w-5 border-2 border-white rounded-full border-t-transparent"></div>
+              ) : (
+                "登録する"
+              )}
             </button>
           </label>
         </div>
