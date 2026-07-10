@@ -4,6 +4,7 @@ import { LoginPage } from "./pages/auth/login/LoginPage";
 import { RegisterProvider } from "./contexts/RegisterContext";
 import { RegisterStep1 } from "./pages/auth/register/RegisterStep1";
 import { RegisterStep2 } from "./pages/auth/register/RegisterStep2";
+import { Home } from "./pages/app/Home";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
             element={<RegisterStep1 />}
           />
           <Route path="/register/password" element={<RegisterStep2 />} />
+          <Route path="/home" element={<Home />} />
         </Routes>
       </RegisterProvider>
     </BrowserRouter>
