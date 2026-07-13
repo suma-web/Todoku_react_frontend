@@ -1,23 +1,180 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { getCurrentUser, type CurrentUser } from "../../api/user";
+import { getPosts, resolveImageURL, type Post } from "../../api/posts";
+
+const POSTS_PER_PAGE = 10;
 
 export const Home = () => {
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState("");
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [postsError, setPostsError] = useState("");
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMorePosts, setHasMorePosts] = useState(false);
+  const [postData, setPostData] = useState({
+    doc: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const canSubmit =
+    (postData.doc.trim().length > 0 || selectedImage !== null) &&
+    postData.doc.length <= 140 &&
+    !isSubmitting;
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setErrorMessage("画像ファイルを選択してください");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage("画像は5MB以下にしてください");
+      event.target.value = "";
+      return;
+    }
+
+    setErrorMessage("");
+    setSelectedImage(file);
+    setImagePreviewUrl(URL.createObjectURL(file));
+  };
 
   useEffect(() => {
-    const loadCurrentUser = async () => {
+    return () => {
+      if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    };
+  }, [imagePreviewUrl]);
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreviewUrl("");
+    if (imageInputRef.current) imageInputRef.current.value = "";
+  };
+
+  const handlePostChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const textarea = event.currentTarget;
+    const doc = textarea.value;
+
+    setPostData((previous) => ({
+      ...previous,
+      doc,
+    }));
+
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!canSubmit) return;
+
+    setErrorMessage("");
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("doc", postData.doc.trim());
+
+      if (selectedImage) {
+        formData.append("image", selectedImage);
+      }
+
+      const response = await fetch("http://localhost:8080/api/posts", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      const body = (await response.json().catch(() => null)) as
+        | Post
+        | {
+            error?: { message?: string };
+          }
+        | null;
+
+      if (!response.ok) {
+        const message =
+          body && "error" in body ? body.error?.message : undefined;
+
+        throw new Error(message ?? "投稿に失敗しました");
+      }
+
+      setPosts((current) => [body as Post, ...current]);
+
+      setPostData({ doc: "" });
+      handleRemoveImage();
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage(
+          "通信に失敗しました。時間をおいてもう一度お試しください。",
+        );
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    const loadHome = async () => {
       try {
         const user = await getCurrentUser();
         setCurrentUser(user);
       } catch {
         navigate("/login", { replace: true });
+        return;
+      }
+
+      try {
+        const page = await getPosts(POSTS_PER_PAGE, 0);
+        setPosts(page.posts);
+        setHasMorePosts(page.has_more);
+      } catch (error) {
+        setPostsError(
+          error instanceof Error
+            ? error.message
+            : "投稿一覧を取得できませんでした",
+        );
+      } finally {
+        setIsLoadingPosts(false);
       }
     };
 
-    void loadCurrentUser();
+    void loadHome();
   }, [navigate]);
+
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMorePosts) return;
+
+    setIsLoadingMore(true);
+    setPostsError("");
+    try {
+      const page = await getPosts(POSTS_PER_PAGE, posts.length);
+      setPosts((current) => [...current, ...page.posts]);
+      setHasMorePosts(page.has_more);
+    } catch (error) {
+      setPostsError(
+        error instanceof Error
+          ? error.message
+          : "投稿一覧を取得できませんでした",
+      );
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   const navigationItems = [
     {
@@ -138,8 +295,8 @@ export const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="mx-auto grid min-h-screen w-full max-w-7xl grid-cols-1 md:grid-cols-[88px_minmax(0,600px)] lg:grid-cols-[260px_minmax(0,600px)_350px]">
+    <div className="h-dvh overflow-hidden bg-black text-white">
+      <div className="mx-auto grid h-full w-full max-w-7xl grid-cols-1 md:grid-cols-[88px_minmax(0,600px)] lg:grid-cols-[260px_minmax(0,600px)_350px]">
         <aside className="sticky top-0 hidden h-screen border-r border-slate-800 px-3 py-4 md:block">
           <div className="mb-4 px-3 text-3xl font-black">𝕏</div>
 
@@ -194,12 +351,8 @@ export const Home = () => {
           </div>
         </aside>
 
-        <main className="min-h-screen border-x border-slate-800">
-          <header className="sticky top-0 z-10 border-b border-slate-800 bg-black/80 backdrop-blur">
-            <div className="flex h-14 items-center px-4">
-              <h1 className="text-xl font-bold">ホーム</h1>
-            </div>
-
+        <main className="flex h-full min-h-0 flex-col overflow-hidden border-x border-slate-800">
+          <header className="z-10 shrink-0 border-b border-slate-800 bg-black/80 backdrop-blur">
             <div className="grid grid-cols-2 text-sm font-bold">
               <button
                 type="button"
@@ -217,22 +370,63 @@ export const Home = () => {
             </div>
           </header>
 
-          <section className="border-b border-slate-800 px-4 py-3">
+          <form
+            onSubmit={handleSubmit}
+            className="shrink-0 border-b border-slate-800 bg-black px-4 py-3"
+          >
             <div className="flex gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
-                U
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
+                  {currentUser?.name.slice(0,1) ?? ""}
+                </div>
               </div>
 
               <div className="flex-1">
-                <div className="min-h-24 py-2 text-xl text-slate-500">
-                  いまどうしてる？
+                <div className="min-h-24 text-xl text-slate-500">
+                  <textarea
+                    ref={textareaRef}
+                    placeholder="いまどうしてる？"
+                    value={postData.doc}
+                    rows={1}
+                    onChange={handlePostChange}
+                    disabled={isSubmitting}
+                    className="box-border min-h-10 w-full resize-none overflow-hidden whitespace-pre-wrap wrap-break-words border-slate-500 py-2 text-white outline-none transition focus:border-gray-200"
+                  />
                 </div>
 
-                <div className="flex items-center justify-between border-t border-slate-800 pt-3">
-                  <div className="flex gap-1 text-sky-500">
+                {imagePreviewUrl && (
+                  <div className="relative mb-3 overflow-hidden rounded-2xl border border-slate-800">
+                    <img
+                      src={imagePreviewUrl}
+                      alt="選択した投稿画像のプレビュー"
+                      className="max-h-80 w-full object-contain"
+                    />
                     <button
                       type="button"
-                      className="rounded-full p-2 hover:bg-sky-500/10"
+                      onClick={handleRemoveImage}
+                      disabled={isSubmitting}
+                      aria-label="選択した画像を削除"
+                      className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-black/70 text-lg leading-none text-white transition hover:bg-black/90"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+
+                {errorMessage && (
+                  <p role="alert" className="mb-3 text-sm text-red-400">
+                    {errorMessage}
+                  </p>
+                )}
+
+                <div className="flex items-center justify-between border-t border-slate-800 pt-3">
+                  <div className="flex gap-1 text-white">
+                    <button
+                      type="button"
+                      onClick={() => imageInputRef.current?.click()}
+                      disabled={isSubmitting}
+                      aria-label="投稿する画像を選択"
+                      className="rounded-full p-2 hover:bg-gray-500/10"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -249,9 +443,16 @@ export const Home = () => {
                         />
                       </svg>
                     </button>
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
                     <button
                       type="button"
-                      className="rounded-full p-2 hover:bg-sky-500/10"
+                      className="rounded-full p-2 hover:bg-slate-900"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -270,7 +471,7 @@ export const Home = () => {
                     </button>
                     <button
                       type="button"
-                      className="rounded-full p-2 hover:bg-sky-500/10"
+                      className="rounded-full p-2 hover:bg-slate-900"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -289,52 +490,198 @@ export const Home = () => {
                     </button>
                     <button
                       type="button"
-                      className="rounded-full p-2 hover:bg-sky-500/10"
+                      className="rounded-full p-2 hover:bg-slate-900"
                     >
-                      😊
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z"
+                        />
+                      </svg>
                     </button>
                   </div>
 
                   <button
-                    type="button"
-                    className="rounded-full bg-sky-500 px-5 py-2 text-sm font-bold text-white opacity-50"
-                    onClick={() => navigate("/post/create")}
+                    type="submit"
+                    disabled={!canSubmit}
+                    className="min-w-24 rounded-full bg-white px-5 py-2 text-sm font-bold text-black disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    ポストする
+                    {isSubmitting ? (
+                      <span
+                        aria-label="投稿中"
+                        className="mx-auto block size-5 animate-spin rounded-full border-2 border-black border-t-transparent"
+                      />
+                    ) : (
+                      "ポストする"
+                    )}
                   </button>
                 </div>
               </div>
             </div>
-          </section>
+          </form>
 
-          <section className="divide-y divide-slate-800">
-            {[1, 2, 3].map((item) => (
-              <article key={item} className="flex gap-3 px-4 py-4">
-                <div className="h-10 w-10 shrink-0 rounded-full bg-slate-700" />
-                <div className="w-full space-y-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-4 w-28 rounded bg-slate-700" />
-                      <div className="h-3 w-20 rounded bg-slate-800" />
-                    </div>
-                    <div className="mt-3 space-y-2">
-                      <div className="h-4 w-full rounded bg-slate-800" />
-                      <div className="h-4 w-5/6 rounded bg-slate-800" />
-                    </div>
+          <section className="min-h-0 flex-1 divide-y divide-slate-800 overflow-y-auto overscroll-contain">
+            {isLoadingPosts && (
+              <p className="px-4 py-8 text-center text-sm text-slate-500">
+                投稿を読み込んでいます...
+              </p>
+            )}
+
+            {!isLoadingPosts && postsError && (
+              <p
+                role="alert"
+                className="px-4 py-8 text-center text-sm text-red-400"
+              >
+                {postsError}
+              </p>
+            )}
+
+            {!isLoadingPosts && !postsError && posts.length === 0 && (
+              <p className="px-4 py-8 text-center text-sm text-slate-500">
+                まだ投稿がありません
+              </p>
+            )}
+
+            {posts.map((post) => (
+              <article key={post.id} className="flex gap-3 px-4 py-4">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
+                  {post.name.slice(0, 1)}
+                </div>
+                <div className="min-w-0 flex-1 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="truncate font-bold">{post.name}</span>
+                    <span className="shrink-0 text-sm text-slate-500">
+                      @{post.name} ·{" "}
+                      {new Intl.DateTimeFormat("ja-JP", {
+                        month: "numeric",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }).format(new Date(post.created_at))}
+                    </span>
                   </div>
 
-                  <div className="h-56 rounded-2xl border border-slate-800 bg-slate-950" />
+                  {post.doc && (
+                    <p className="whitespace-pre-wrap wrap-break-word text-[15px]">
+                      {post.doc}
+                    </p>
+                  )}
+
+                  {post.image_url && (
+                    <img
+                      src={resolveImageURL(post.image_url)}
+                      alt={`${post.name}の投稿画像`}
+                      loading="lazy"
+                      className="max-h-[500px] w-full rounded-2xl border border-slate-800 object-contain"
+                    />
+                  )}
 
                   <div className="flex max-w-md justify-between text-slate-500">
-                    <span>💬</span>
-                    <span>🔁</span>
-                    <span>♡</span>
-                    <span>📊</span>
-                    <span>↗</span>
+                    <span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"
+                        />
+                      </svg>
+                    </span>
+                    <span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                        />
+                      </svg>
+                    </span>
+                    <span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                        />
+                      </svg>
+                    </span>
+                    <span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0 0 20.25 18V6A2.25 2.25 0 0 0 18 3.75H6A2.25 2.25 0 0 0 3.75 6v12A2.25 2.25 0 0 0 6 20.25Z"
+                        />
+                      </svg>
+                    </span>
+                    <span>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"
+                        />
+                      </svg>
+                    </span>
                   </div>
                 </div>
               </article>
             ))}
+
+            {!isLoadingPosts && posts.length > 0 && hasMorePosts && (
+              <div className="px-4 py-5 text-center">
+                <button
+                  type="button"
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                  className="rounded-full border border-slate-700 px-5 py-2 text-sm font-bold transition hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isLoadingMore ? "読み込み中..." : "さらに表示"}
+                </button>
+              </div>
+            )}
           </section>
         </main>
 
