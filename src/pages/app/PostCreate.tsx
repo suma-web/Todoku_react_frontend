@@ -140,7 +140,7 @@ export const PostCreate = () => {
                 onChange={handlePostChange}
                 disabled={isSubmitting}
                 maxLength={140}
-                className="box-border min-h-10 w-full resize-none overflow-hidden whitespace-pre-wrap break-words border-slate-500 py-2 outline-none transition focus:border-gray-200"
+                className="box-border min-h-10 w-full resize-none overflow-hidden whitespace-pre-wrap wrap-break-word border-slate-500 py-2 outline-none transition focus:border-gray-200"
               />
             </div>
           </label>
