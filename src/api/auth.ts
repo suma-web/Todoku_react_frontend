@@ -1,6 +1,7 @@
 import type { ErrorResponse } from "../types/apierror";
 import type { loginData } from "../types/login";
 import type { RegisterData } from "../types/register";
+import { API_BASE_URL } from "./base";
 
 export class ApiError extends Error {
   status: number;
@@ -15,7 +16,7 @@ export class ApiError extends Error {
 }
 
 export const signup = async (data: RegisterData) => {
-  const response = await fetch("http://localhost:8080/api/signup", {
+  const response = await fetch(`${API_BASE_URL}/api/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -39,7 +40,7 @@ export const signup = async (data: RegisterData) => {
 };
 
 export const login = async (data: loginData) => {
-  const response = await fetch("http://localhost:8080/api/login", {
+  const response = await fetch(`${API_BASE_URL}/api/login`, {
     method: "POST",
     credentials: "include",
     headers: {

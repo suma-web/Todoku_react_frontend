@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { getCurrentUser, type CurrentUser } from "../../api/user";
+import { API_BASE_URL } from "../../api/base";
 import { getPosts, resolveImageURL, type Post } from "../../api/posts";
 
 const POSTS_PER_PAGE = 10;
@@ -90,7 +91,7 @@ export const Home = () => {
         formData.append("image", selectedImage);
       }
 
-      const response = await fetch("http://localhost:8080/api/posts", {
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: "POST",
         credentials: "include",
         body: formData,
