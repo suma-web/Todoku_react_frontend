@@ -1,10 +1,12 @@
+import { API_BASE_URL } from "./base";
+
 export type CurrentUser = {
   id: number;
   name: string;
 };
 
 export const getCurrentUser = async (): Promise<CurrentUser> => {
-  const response = await fetch("http://localhost:8080/api/me", {
+  const response = await fetch(`${API_BASE_URL}/api/me`, {
     credentials: "include",
   });
 
