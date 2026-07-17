@@ -6,6 +6,7 @@ import { RegisterStep1 } from "./pages/auth/register/RegisterStep1";
 import { RegisterStep2 } from "./pages/auth/register/RegisterStep2";
 import { Home } from "./pages/app/Home";
 import { PostCreate } from "./pages/app/PostCreate";
+import { PostDetail } from "./pages/app/PostDetail";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/register/password" element={<RegisterStep2 />} />
           <Route path="/home" element={<Home />} />
           <Route path="/post/create" element={<PostCreate />} />
+          <Route path="/post/:id/detail" element={<PostDetail />} />
         </Routes>
       </RegisterProvider>
     </BrowserRouter>

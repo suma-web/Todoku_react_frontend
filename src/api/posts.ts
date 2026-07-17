@@ -41,5 +41,23 @@ export const getPosts = async (
   return body as PostsPage;
 };
 
+export const getPost = async (postID: number): Promise<Post> => {
+  const response = await fetch(`${API_BASE_URL}/api/posts/${postID}`, {
+    credentials: "include",
+  });
+
+  const body = (await response.json().catch(() => null)) as
+    | Post
+    | { error?: { message?: string } }
+    | null;
+
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "投稿を取得できませんでした");
+  }
+
+  return body as Post;
+};
+
 export const resolveImageURL = (imageURL: string) =>
   imageURL.startsWith("http") ? imageURL : `${API_BASE_URL}${imageURL}`;

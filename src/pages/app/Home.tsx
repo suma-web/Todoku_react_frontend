@@ -552,7 +552,18 @@ export const Home = () => {
             )}
 
             {posts.map((post) => (
-              <article key={post.id} className="flex gap-3 px-4 py-4">
+              <article
+                key={post.id}
+                role="link"
+                tabIndex={0}
+                onClick={() => navigate(`/post/${post.id}/detail`)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    navigate(`/post/${post.id}/detail`);
+                  }
+                }}
+                className="flex cursor-pointer gap-3 px-4 py-4 transition hover:bg-slate-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-500"
+              >
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
                   {post.name.slice(0, 1)}
                 </div>
