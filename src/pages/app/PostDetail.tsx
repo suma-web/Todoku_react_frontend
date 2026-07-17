@@ -8,14 +8,15 @@ export const PostDetail = () => {
   const [post, setPost] = useState<Post | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const postID = Number(id);
+  const isValidPostID = Number.isInteger(postID) && postID > 0;
+  const displayError = isValidPostID
+    ? errorMessage
+    : "投稿IDが不正です";
+  const isDisplayingLoading = isValidPostID && isLoading;
 
   useEffect(() => {
-    const postID = Number(id);
-    if (!Number.isInteger(postID) || postID <= 0) {
-      setErrorMessage("投稿IDが不正です");
-      setIsLoading(false);
-      return;
-    }
+    if (!isValidPostID) return;
 
     const loadPost = async () => {
       try {
@@ -30,7 +31,7 @@ export const PostDetail = () => {
     };
 
     void loadPost();
-  }, [id]);
+  }, [postID, isValidPostID]);
 
   return (
     <main className="min-h-dvh bg-black text-white">
@@ -47,13 +48,15 @@ export const PostDetail = () => {
           <h1 className="text-xl font-bold">ポスト</h1>
         </header>
 
-        {isLoading && (
+        {isDisplayingLoading && (
           <p className="px-4 py-10 text-center text-slate-500">読み込み中...</p>
         )}
 
-        {!isLoading && errorMessage && (
+        {!isDisplayingLoading && displayError && (
           <div className="px-4 py-10 text-center">
-            <p role="alert" className="text-red-400">{errorMessage}</p>
+            <p role="alert" className="text-red-400">
+              {displayError}
+            </p>
             <button
               type="button"
               onClick={() => navigate("/home")}
@@ -64,7 +67,7 @@ export const PostDetail = () => {
           </div>
         )}
 
-        {!isLoading && post && (
+        {!isDisplayingLoading && !displayError && post && (
           <article className="border-b border-slate-800 px-4 py-5">
             <div className="flex items-center gap-3">
               <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-slate-700 text-lg font-bold">
@@ -103,11 +106,38 @@ export const PostDetail = () => {
               }).format(new Date(post.created_at))}
             </time>
 
-            <div className="flex justify-around py-3 text-slate-500" aria-label="投稿アクション">
-              <button type="button" aria-label="返信" className="rounded-full p-2 hover:bg-slate-900">💬</button>
-              <button type="button" aria-label="リポスト" className="rounded-full p-2 hover:bg-slate-900">↻</button>
-              <button type="button" aria-label="いいね" className="rounded-full p-2 hover:bg-slate-900">♡</button>
-              <button type="button" aria-label="共有" className="rounded-full p-2 hover:bg-slate-900">↗</button>
+            <div
+              className="flex justify-around py-3 text-slate-500"
+              aria-label="投稿アクション"
+            >
+              <button
+                type="button"
+                aria-label="返信"
+                className="rounded-full p-2 hover:bg-slate-900"
+              >
+                💬
+              </button>
+              <button
+                type="button"
+                aria-label="リポスト"
+                className="rounded-full p-2 hover:bg-slate-900"
+              >
+                ↻
+              </button>
+              <button
+                type="button"
+                aria-label="いいね"
+                className="rounded-full p-2 hover:bg-slate-900"
+              >
+                ♡
+              </button>
+              <button
+                type="button"
+                aria-label="共有"
+                className="rounded-full p-2 hover:bg-slate-900"
+              >
+                ↗
+              </button>
             </div>
           </article>
         )}
