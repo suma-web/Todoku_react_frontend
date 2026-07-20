@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
+import { API_BASE_URL } from "../../api/base";
 
 export const PostCreate = () => {
   const navigate = useNavigate();
@@ -67,6 +68,10 @@ export const PostCreate = () => {
     setIsSubmitting(true);
 
     try {
+      const minimumLoadingTime = new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 3000);
+      });
+
       const formData = new FormData();
       formData.append("doc", postData.doc.trim());
 
@@ -74,11 +79,14 @@ export const PostCreate = () => {
         formData.append("image", selectedImage);
       }
 
-      const response = await fetch("http://localhost:8080/api/posts", {
+      const response = await fetch(`${API_BASE_URL}/api/posts`, {
         method: "POST",
         credentials: "include",
         body: formData,
       });
+
+      // APIが早く完了しても、ローディングバーを最低3秒間表示する。
+      await minimumLoadingTime;
 
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as {
@@ -117,6 +125,17 @@ export const PostCreate = () => {
         onSubmit={handleSubmit}
         className="relative min-h-[350px] w-full max-w-[600px] rounded-2xl bg-white px-8 pb-12 pt-16 shadow-xl sm:px-3"
       >
+        {isSubmitting ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-200"
+          >
+            <div className="h-full w-full animate-pulse rounded-full bg-sky-500" />
+          </div>
+        ) : (
+          <span></span>
+        )}
         <button
           type="button"
           onClick={handlePrevform}
@@ -133,15 +152,17 @@ export const PostCreate = () => {
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
                 U
               </div>
-              <textarea
-                placeholder="いまどうしてる？"
-                value={postData.doc}
-                rows={1}
-                onChange={handlePostChange}
-                disabled={isSubmitting}
-                maxLength={140}
-                className="box-border min-h-10 w-full resize-none overflow-hidden whitespace-pre-wrap wrap-break-word border-slate-500 py-2 outline-none transition focus:border-gray-200"
-              />
+              <div className="min-w-0 flex-1">
+                <textarea
+                  placeholder="いまどうしてる？"
+                  value={postData.doc}
+                  rows={1}
+                  onChange={handlePostChange}
+                  disabled={isSubmitting}
+                  maxLength={140}
+                  className="box-border min-h-10 w-full resize-none overflow-hidden whitespace-pre-wrap wrap-break-word border-slate-500 py-2 outline-none transition focus:border-gray-200"
+                />
+              </div>
             </div>
           </label>
 

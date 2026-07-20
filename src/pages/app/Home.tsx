@@ -84,6 +84,10 @@ export const Home = () => {
     setIsSubmitting(true);
 
     try {
+      const minimumLoadingTime = new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 3000);
+      });
+
       const formData = new FormData();
       formData.append("doc", postData.doc.trim());
 
@@ -101,8 +105,11 @@ export const Home = () => {
         | Post
         | {
             error?: { message?: string };
-          }
+        }
         | null;
+
+      // APIが早く完了しても、ローディングバーを最低3秒間表示する。
+      await minimumLoadingTime;
 
       if (!response.ok) {
         const message =
@@ -378,11 +385,22 @@ export const Home = () => {
             <div className="flex gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
-                  {currentUser?.name.slice(0,1) ?? ""}
+                  {currentUser?.name.slice(0, 1) ?? ""}
                 </div>
               </div>
 
               <div className="flex-1">
+                {isSubmitting ? (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-800"
+                  >
+                    <div className="h-full w-full animate-pulse rounded-full bg-sky-500" />
+                  </div>
+                ) : (
+                  <span></span>
+                )}
                 <div className="min-h-24 text-xl text-slate-500">
                   <textarea
                     ref={textareaRef}
