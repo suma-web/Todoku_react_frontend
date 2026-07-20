@@ -105,10 +105,9 @@ export const Home = () => {
         | Post
         | {
             error?: { message?: string };
-        }
+          }
         | null;
 
-      // APIが早く完了しても、ローディングバーを最低3秒間表示する。
       await minimumLoadingTime;
 
       if (!response.ok) {
@@ -313,6 +312,11 @@ export const Home = () => {
               <button
                 key={item.label}
                 type="button"
+                onClick={() => {
+                  if (item.label === "プロフィール" && currentUser) {
+                    navigate(`/user/${encodeURIComponent(currentUser.name)}`);
+                  }
+                }}
                 className="flex w-full items-center gap-4 rounded-full px-3 py-3 text-left text-xl transition hover:bg-slate-900 lg:text-lg"
               >
                 <span className="w-8 text-center text-2xl">{item.icon}</span>
@@ -383,7 +387,14 @@ export const Home = () => {
             className="shrink-0 border-b border-slate-800 bg-black px-4 py-3"
           >
             <div className="flex gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold"
+                onClick={() => {
+                  if (currentUser) {
+                    navigate(`/user/${encodeURIComponent(currentUser.name)}`);
+                  }
+                }}
+              >
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
                   {currentUser?.name.slice(0, 1) ?? ""}
                 </div>

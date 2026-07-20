@@ -7,7 +7,7 @@ import { RegisterStep2 } from "./pages/auth/register/RegisterStep2";
 import { Home } from "./pages/app/Home";
 import { PostCreate } from "./pages/app/PostCreate";
 import { PostDetail } from "./pages/app/PostDetail";
-import { SelfProfile } from "./pages/app/selfProfile";
+import { SelfProfile } from "./pages/app/Profile";
 
 function App() {
   return (
