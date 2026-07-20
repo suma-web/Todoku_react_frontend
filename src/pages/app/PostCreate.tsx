@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { API_BASE_URL } from "../../api/base";
+import { getCurrentUser, type CurrentUser } from "../../api/user";
 
 export const PostCreate = () => {
   const navigate = useNavigate();
@@ -12,12 +13,26 @@ export const PostCreate = () => {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
   useEffect(() => {
     return () => {
       if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
     };
   }, [imagePreviewUrl]);
+
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        setCurrentUser(user);
+      } catch {
+        navigate("/login", { replace: true });
+      }
+    };
+
+    void loadCurrentUser();
+  }, [navigate]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -150,7 +165,7 @@ export const PostCreate = () => {
             <span className="sr-only">いまどうしてる？</span>
             <div className="flex gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
-                U
+                {currentUser?.name.slice(0, 1) ?? ""}
               </div>
               <div className="min-w-0 flex-1">
                 <textarea
