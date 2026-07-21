@@ -84,6 +84,10 @@ export const Home = () => {
     setIsSubmitting(true);
 
     try {
+      const minimumLoadingTime = new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 3000);
+      });
+
       const formData = new FormData();
       formData.append("doc", postData.doc.trim());
 
@@ -103,6 +107,8 @@ export const Home = () => {
             error?: { message?: string };
           }
         | null;
+
+      await minimumLoadingTime;
 
       if (!response.ok) {
         const message =
@@ -306,6 +312,11 @@ export const Home = () => {
               <button
                 key={item.label}
                 type="button"
+                onClick={() => {
+                  if (item.label === "プロフィール" && currentUser) {
+                    navigate(`/user/${encodeURIComponent(currentUser.name)}`);
+                  }
+                }}
                 className="flex w-full items-center gap-4 rounded-full px-3 py-3 text-left text-xl transition hover:bg-slate-900 lg:text-lg"
               >
                 <span className="w-8 text-center text-2xl">{item.icon}</span>
@@ -376,13 +387,31 @@ export const Home = () => {
             className="shrink-0 border-b border-slate-800 bg-black px-4 py-3"
           >
             <div className="flex gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold"
+                onClick={() => {
+                  if (currentUser) {
+                    navigate(`/user/${encodeURIComponent(currentUser.name)}`);
+                  }
+                }}
+              >
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-slate-700 font-bold">
-                  {currentUser?.name.slice(0,1) ?? ""}
+                  {currentUser?.name.slice(0, 1) ?? ""}
                 </div>
               </div>
 
               <div className="flex-1">
+                {isSubmitting ? (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-800"
+                  >
+                    <div className="h-full w-full animate-pulse rounded-full bg-sky-500" />
+                  </div>
+                ) : (
+                  <span></span>
+                )}
                 <div className="min-h-24 text-xl text-slate-500">
                   <textarea
                     ref={textareaRef}

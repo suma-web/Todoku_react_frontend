@@ -16,6 +16,13 @@ export type PostsPage = {
   has_more: boolean;
 };
 
+export type UserTweetsPage = {
+  tweets: Post[];
+  limit: number;
+  offset: number;
+  has_more: boolean;
+};
+
 export const getPosts = async (
   limit = 20,
   offset = 0,
@@ -39,6 +46,30 @@ export const getPosts = async (
   }
 
   return body as PostsPage;
+};
+
+export const getUserTweets = async (
+  userName: string,
+  limit = 20,
+  offset = 0,
+): Promise<UserTweetsPage> => {
+  const query = new URLSearchParams({
+    user: userName,
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const response = await fetch(`${API_BASE_URL}/api/posts?${query}`, {
+    credentials: "include",
+  });
+  const body = (await response.json().catch(() => null)) as
+    | UserTweetsPage
+    | { error?: { message?: string } }
+    | null;
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "ユーザーの投稿一覧を取得できませんでした");
+  }
+  return body as UserTweetsPage;
 };
 
 export const getPost = async (postID: number): Promise<Post> => {
