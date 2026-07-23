@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { getUserTweets, resolveImageURL, type Post } from "../../api/posts";
+import {
+  deletePost,
+  getUserTweets,
+  resolveImageURL,
+  type Post,
+} from "../../api/posts";
 import {
   getCurrentUser,
   getUserProfile,
@@ -138,6 +143,10 @@ export const SelfProfile = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(false);
+  const [menuPostID, setMenuPostID] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -187,6 +196,26 @@ export const SelfProfile = () => {
       );
     } finally {
       setLoadingMore(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      await deletePost(deleteTarget.id);
+      setPosts((current) =>
+        current.filter((post) => post.id !== deleteTarget.id),
+      );
+      setDeleteTarget(null);
+      setMenuPostID(null);
+    } catch (reason) {
+      setDeleteError(
+        reason instanceof Error ? reason.message : "投稿を削除できませんでした",
+      );
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -295,16 +324,65 @@ export const SelfProfile = () => {
                 {post.name.slice(0, 1)}
               </div>
               <div className="min-w-0 flex-1">
-                <p>
-                  <strong>{post.name}</strong>{" "}
-                  <span className="text-sm text-slate-500">
-                    @{post.name} ·{" "}
-                    {new Intl.DateTimeFormat("ja-JP", {
-                      month: "numeric",
-                      day: "numeric",
-                    }).format(new Date(post.created_at))}
-                  </span>
-                </p>
+                <div className="flex items-center gap-1">
+                  <p className="min-w-0">
+                    <strong>{post.name}</strong>{" "}
+                    <span className="text-sm text-slate-500">
+                      @{post.name} ·{" "}
+                      {new Intl.DateTimeFormat("ja-JP", {
+                        month: "numeric",
+                        day: "numeric",
+                      }).format(new Date(post.created_at))}
+                    </span>
+                  </p>
+                  {viewer?.id === post.user_id && (
+                    <div className="relative ml-auto">
+                      <button
+                        type="button"
+                        aria-label="投稿メニュー"
+                        aria-expanded={menuPostID === post.id}
+                        className="rounded-full p-1 text-slate-500 hover:bg-sky-500/10 hover:text-sky-400"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setMenuPostID((current) =>
+                            current === post.id ? null : post.id,
+                          );
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={1.5}
+                          stroke="currentColor"
+                          className="size-6"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z"
+                          />
+                        </svg>
+                      </button>
+                      {menuPostID === post.id && (
+                        <div className="absolute right-0 top-10 z-20 w-40 overflow-hidden rounded-xl bg-black py-1 shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+                          <button
+                            type="button"
+                            className="w-full px-4 py-3 text-left font-bold text-red-500 hover:bg-slate-900"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setDeleteError("");
+                              setDeleteTarget(post);
+                              setMenuPostID(null);
+                            }}
+                          >
+                            削除
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
                 {post.doc && (
                   <p className="mt-2 whitespace-pre-wrap wrap-break-word">
                     {post.doc}
@@ -352,6 +430,52 @@ export const SelfProfile = () => {
             });
           }}
         />
+      )}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-500/40 px-4"
+          role="presentation"
+          onMouseDown={(event) =>
+            event.target === event.currentTarget &&
+            !deleting &&
+            setDeleteTarget(null)
+          }
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-title"
+            className="w-full max-w-xs rounded-2xl bg-black p-8 text-white"
+          >
+            <h2 id="delete-title" className="text-xl font-bold">
+              ポストを削除しますか？
+            </h2>
+            <p className="mt-2 text-sm leading-5 text-slate-500">
+              この操作は取り消せません。プロフィールやタイムラインからポストが削除されます。
+            </p>
+            {deleteError && (
+              <p role="alert" className="mt-3 text-sm text-red-400">
+                {deleteError}
+              </p>
+            )}
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={handleDelete}
+              className="mt-6 w-full rounded-full bg-red-600 py-3 font-bold hover:bg-red-700 disabled:opacity-50"
+            >
+              {deleting ? "削除中..." : "削除"}
+            </button>
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={() => setDeleteTarget(null)}
+              className="mt-3 w-full rounded-full border border-slate-600 py-3 font-bold hover:bg-slate-900 disabled:opacity-50"
+            >
+              キャンセル
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

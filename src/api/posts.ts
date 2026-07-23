@@ -90,5 +90,17 @@ export const getPost = async (postID: number): Promise<Post> => {
   return body as Post;
 };
 
+export const deletePost = async (postID: number): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/api/posts/${postID}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (response.ok) return;
+  const body = (await response.json().catch(() => null)) as
+    | { error?: { message?: string } }
+    | null;
+  throw new Error(body?.error?.message ?? "投稿を削除できませんでした");
+};
+
 export const resolveImageURL = (imageURL: string) =>
   imageURL.startsWith("http") ? imageURL : `${API_BASE_URL}${imageURL}`;
