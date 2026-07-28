@@ -44,6 +44,17 @@ export const getComments = async (postID: number, limit = 20, offset = 0): Promi
   return body as CommentsPage;
 };
 
+export const getMyComments = async (limit = 20, offset = 0): Promise<CommentsPage> => {
+  const query = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  const response = await fetch(`${API_BASE_URL}/api/me/comments?${query}`, { credentials: "include" });
+  const body = (await response.json().catch(() => null)) as CommentsPage | ErrorBody | null;
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "コメント一覧を取得できませんでした");
+  }
+  return body as CommentsPage;
+};
+
 export const deleteComment = async (commentID: number): Promise<void> => {
   const response = await fetch(`${API_BASE_URL}/api/comments/${commentID}`, { method: "DELETE", credentials: "include" });
   if (response.ok) return;
