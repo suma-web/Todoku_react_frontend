@@ -2,7 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { getCurrentUser, type CurrentUser } from "../../api/user";
 import { API_BASE_URL } from "../../api/base";
-import { getPosts, resolveImageURL, type Post } from "../../api/posts";
+import {
+  getPosts,
+  resolveImageURL,
+  retweetPost,
+  undoRetweet,
+  type Post,
+} from "../../api/posts";
 import { CommentModal } from "../../components/comments/CommentModal";
 
 const POSTS_PER_PAGE = 10;
@@ -16,6 +22,9 @@ export const Home = () => {
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMorePosts, setHasMorePosts] = useState(false);
+  const [retweetingPostIDs, setRetweetingPostIDs] = useState<Set<number>>(
+    new Set(),
+  );
   const [commentTarget, setCommentTarget] = useState<Post | null>(null);
   const [postData, setPostData] = useState({
     doc: "",
@@ -182,6 +191,38 @@ export const Home = () => {
       );
     } finally {
       setIsLoadingMore(false);
+    }
+  };
+
+  const handleRetweet = async (post: Post) => {
+    if (retweetingPostIDs.has(post.id)) return;
+    setRetweetingPostIDs((current) => new Set(current).add(post.id));
+    setPostsError("");
+    try {
+      const result = post.retweeted_by_me
+        ? await undoRetweet(post.id)
+        : await retweetPost(post.id);
+      setPosts((current) =>
+        current.map((item) =>
+          item.id === post.id
+            ? {
+                ...item,
+                retweet_count: result.retweet_count,
+                retweeted_by_me: result.retweeted_by_me,
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      setPostsError(
+        error instanceof Error ? error.message : "リツイートできませんでした",
+      );
+    } finally {
+      setRetweetingPostIDs((current) => {
+        const next = new Set(current);
+        next.delete(post.id);
+        return next;
+      });
     }
   };
 
@@ -653,7 +694,25 @@ export const Home = () => {
                         />
                       </svg>
                     </button>
-                    <span>
+                    <button
+                      type="button"
+                      aria-label={
+                        post.retweeted_by_me
+                          ? `${post.name}の投稿のリツイートを解除`
+                          : `${post.name}の投稿をリツイート`
+                      }
+                      disabled={
+                        retweetingPostIDs.has(post.id)
+                      }
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void handleRetweet(post);
+                      }}
+                      onKeyDown={(event) => event.stopPropagation()}
+                      className={`flex items-center gap-1 rounded-full p-1 hover:bg-green-500/10 hover:text-green-500 disabled:cursor-default ${
+                        post.retweeted_by_me ? "text-green-500" : ""
+                      }`}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
@@ -668,7 +727,10 @@ export const Home = () => {
                           d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
                         />
                       </svg>
-                    </span>
+                      <span className="text-xs">
+                        {post.retweet_count}
+                      </span>
+                    </button>
                     <span>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
