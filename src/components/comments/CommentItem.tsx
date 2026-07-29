@@ -34,7 +34,10 @@ export const CommentItem = ({
             </span>
           </p>
           {canDelete && (
-            <div className="relative">
+            <div
+              className="relative"
+              onClick={(event) => event.stopPropagation()}
+            >
               <button
                 type="button"
                 aria-label="コメントメニュー"
