@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { deleteComment, getMyComments, type Comment } from "../../api/comments";
-import { deletePost, getUserTweets, type Post } from "../../api/posts";
+import {
+  deletePost,
+  getMyRetweets,
+  getUserTweets,
+  type Post,
+} from "../../api/posts";
 import {
   getCurrentUser,
   getUserProfile,
@@ -14,7 +19,7 @@ import { CommentItem } from "../../components/comments/CommentItem";
 import { DeleteCommentModal } from "../../components/comments/DeleteCommentModal";
 
 const PAGE_SIZE = 10;
-type ProfileTab = "posts" | "comments";
+type ProfileTab = "posts" | "retweets" | "comments";
 
 export const SelfProfile = () => {
   const { name = "" } = useParams();
@@ -23,13 +28,17 @@ export const SelfProfile = () => {
   const [viewer, setViewer] = useState<CurrentUser | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [hasMore, setHasMore] = useState(false);
+  const [retweetedPosts, setRetweetedPosts] = useState<Post[]>([]);
+  const [hasMoreRetweets, setHasMoreRetweets] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [hasMoreComments, setHasMoreComments] = useState(false);
   const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingMoreRetweets, setLoadingMoreRetweets] = useState(false);
   const [loadingMoreComments, setLoadingMoreComments] = useState(false);
   const [error, setError] = useState("");
+  const [retweetsError, setRetweetsError] = useState("");
   const [commentsError, setCommentsError] = useState("");
   const [editing, setEditing] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
@@ -45,6 +54,8 @@ export const SelfProfile = () => {
     const load = async () => {
       setLoading(true);
       setError("");
+      setCommentsError("");
+      setRetweetsError("");
       try {
         const decodedName = decodeURIComponent(name);
         const [foundProfile, current, page] = await Promise.all([
@@ -60,6 +71,8 @@ export const SelfProfile = () => {
           setActiveTab("posts");
           setComments([]);
           setHasMoreComments(false);
+          setRetweetedPosts([]);
+          setHasMoreRetweets(false);
         }
         if (current.id === foundProfile.id) {
           try {
@@ -74,6 +87,21 @@ export const SelfProfile = () => {
                 reason instanceof Error
                   ? reason.message
                   : "コメント一覧を取得できませんでした",
+              );
+            }
+          }
+          try {
+            const retweetsPage = await getMyRetweets(PAGE_SIZE, 0);
+            if (active) {
+              setRetweetedPosts(retweetsPage.posts);
+              setHasMoreRetweets(retweetsPage.has_more);
+            }
+          } catch (reason) {
+            if (active) {
+              setRetweetsError(
+                reason instanceof Error
+                  ? reason.message
+                  : "リツイート一覧を取得できませんでした",
               );
             }
           }
@@ -146,6 +174,25 @@ export const SelfProfile = () => {
       );
     } finally {
       setLoadingMoreComments(false);
+    }
+  };
+
+  const loadMoreRetweets = async () => {
+    if (loadingMoreRetweets) return;
+    setLoadingMoreRetweets(true);
+    setRetweetsError("");
+    try {
+      const page = await getMyRetweets(PAGE_SIZE, retweetedPosts.length);
+      setRetweetedPosts((current) => [...current, ...page.posts]);
+      setHasMoreRetweets(page.has_more);
+    } catch (reason) {
+      setRetweetsError(
+        reason instanceof Error
+          ? reason.message
+          : "リツイート一覧を取得できませんでした",
+      );
+    } finally {
+      setLoadingMoreRetweets(false);
     }
   };
 
@@ -247,7 +294,7 @@ export const SelfProfile = () => {
           </div>
         </section>
         <div
-          className={`grid border-b border-slate-800 text-center ${isMe ? "grid-cols-2" : "grid-cols-1"}`}
+          className={`grid border-b border-slate-800 text-center ${isMe ? "grid-cols-3" : "grid-cols-1"}`}
         >
           <button
             type="button"
@@ -256,6 +303,15 @@ export const SelfProfile = () => {
           >
             ポスト
           </button>
+          {isMe && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("retweets")}
+              className={`py-4 font-bold hover:bg-slate-900 ${activeTab === "retweets" ? "border-b-4 border-sky-500" : "text-slate-500"}`}
+            >
+              リツイート
+            </button>
+          )}
           {isMe && (
             <button
               type="button"
@@ -303,6 +359,48 @@ export const SelfProfile = () => {
               className="text-sky-500 disabled:opacity-50"
             >
               {loadingMore ? "読み込み中..." : "さらに表示"}
+            </button>
+          </div>
+        )}
+        {activeTab === "retweets" && retweetsError && (
+          <p
+            role="alert"
+            className="border-b border-slate-800 p-4 text-center text-sm text-red-400"
+          >
+            {retweetsError}
+          </p>
+        )}
+        {activeTab === "retweets" &&
+          retweetedPosts.length === 0 &&
+          !retweetsError && (
+            <p className="p-10 text-center text-slate-500">
+              まだリツイートがありません
+            </p>
+          )}
+        {activeTab === "retweets" && (
+          <div className="divide-y divide-slate-800">
+            {retweetedPosts.map((post) => (
+              <ProfilePostCard
+                key={post.id}
+                post={post}
+                canDelete={viewer?.id === post.user_id}
+                onOpen={(postID) => navigate(`/post/${postID}/detail`)}
+                onRequestDelete={(target) => {
+                  setDeleteError("");
+                  setDeleteTarget(target);
+                }}
+              />
+            ))}
+          </div>
+        )}
+        {activeTab === "retweets" && hasMoreRetweets && (
+          <div className="p-5 text-center">
+            <button
+              disabled={loadingMoreRetweets}
+              onClick={loadMoreRetweets}
+              className="text-sky-500 disabled:opacity-50"
+            >
+              {loadingMoreRetweets ? "読み込み中..." : "さらに表示"}
             </button>
           </div>
         )}
