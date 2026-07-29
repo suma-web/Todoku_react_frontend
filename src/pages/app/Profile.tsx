@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import {
-  deletePost,
-  getUserTweets,
-  type Post,
-} from "../../api/posts";
+import { deleteComment, getMyComments, type Comment } from "../../api/comments";
+import { deletePost, getUserTweets, type Post } from "../../api/posts";
 import {
   getCurrentUser,
   getUserProfile,
@@ -13,8 +10,11 @@ import {
 import { EditProfileModal } from "../../components/profile/EditProfileModal";
 import { DeletePostModal } from "../../components/posts/DeletePostModal";
 import { ProfilePostCard } from "../../components/posts/ProfilePostCard";
+import { CommentItem } from "../../components/comments/CommentItem";
+import { DeleteCommentModal } from "../../components/comments/DeleteCommentModal";
 
 const PAGE_SIZE = 10;
+type ProfileTab = "posts" | "comments";
 
 export const SelfProfile = () => {
   const { name = "" } = useParams();
@@ -23,13 +23,22 @@ export const SelfProfile = () => {
   const [viewer, setViewer] = useState<CurrentUser | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [hasMore, setHasMore] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [hasMoreComments, setHasMoreComments] = useState(false);
+  const [activeTab, setActiveTab] = useState<ProfileTab>("posts");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false);
   const [error, setError] = useState("");
+  const [commentsError, setCommentsError] = useState("");
   const [editing, setEditing] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [deleteCommentTarget, setDeleteCommentTarget] =
+    useState<Comment | null>(null);
+  const [deletingComment, setDeletingComment] = useState(false);
+  const [deleteCommentError, setDeleteCommentError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -48,6 +57,26 @@ export const SelfProfile = () => {
           setViewer(current);
           setPosts(page.tweets);
           setHasMore(page.has_more);
+          setActiveTab("posts");
+          setComments([]);
+          setHasMoreComments(false);
+        }
+        if (current.id === foundProfile.id) {
+          try {
+            const commentsPage = await getMyComments(PAGE_SIZE, 0);
+            if (active) {
+              setComments(commentsPage.comments);
+              setHasMoreComments(commentsPage.has_more);
+            }
+          } catch (reason) {
+            if (active) {
+              setCommentsError(
+                reason instanceof Error
+                  ? reason.message
+                  : "コメント一覧を取得できませんでした",
+              );
+            }
+          }
         }
       } catch (reason) {
         if (active)
@@ -98,6 +127,46 @@ export const SelfProfile = () => {
       );
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const loadMoreComments = async () => {
+    if (loadingMoreComments) return;
+    setLoadingMoreComments(true);
+    setCommentsError("");
+    try {
+      const page = await getMyComments(PAGE_SIZE, comments.length);
+      setComments((current) => [...current, ...page.comments]);
+      setHasMoreComments(page.has_more);
+    } catch (reason) {
+      setCommentsError(
+        reason instanceof Error
+          ? reason.message
+          : "コメント一覧を取得できませんでした",
+      );
+    } finally {
+      setLoadingMoreComments(false);
+    }
+  };
+
+  const handleDeleteComment = async () => {
+    if (!deleteCommentTarget || deletingComment) return;
+    setDeletingComment(true);
+    setDeleteCommentError("");
+    try {
+      await deleteComment(deleteCommentTarget.id);
+      setComments((current) =>
+        current.filter((comment) => comment.id !== deleteCommentTarget.id),
+      );
+      setDeleteCommentTarget(null);
+    } catch (reason) {
+      setDeleteCommentError(
+        reason instanceof Error
+          ? reason.message
+          : "コメントを削除できませんでした",
+      );
+    } finally {
+      setDeletingComment(false);
     }
   };
 
@@ -177,12 +246,27 @@ export const SelfProfile = () => {
             </span>
           </div>
         </section>
-        <div className="border-b border-slate-800 text-center">
-          <span className="inline-block border-b-4 border-sky-500 px-8 py-4 font-bold">
+        <div
+          className={`grid border-b border-slate-800 text-center ${isMe ? "grid-cols-2" : "grid-cols-1"}`}
+        >
+          <button
+            type="button"
+            onClick={() => setActiveTab("posts")}
+            className={`py-4 font-bold hover:bg-slate-900 ${activeTab === "posts" ? "border-b-4 border-sky-500" : "text-slate-500"}`}
+          >
             ポスト
-          </span>
+          </button>
+          {isMe && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("comments")}
+              className={`py-4 font-bold hover:bg-slate-900 ${activeTab === "comments" ? "border-b-4 border-sky-500" : "text-slate-500"}`}
+            >
+              コメント
+            </button>
+          )}
         </div>
-        {error && (
+        {activeTab === "posts" && error && (
           <p
             role="alert"
             className="border-b border-slate-800 p-4 text-center text-sm text-red-400"
@@ -190,12 +274,13 @@ export const SelfProfile = () => {
             {error}
           </p>
         )}
-        {posts.length === 0 && !error && (
+        {activeTab === "posts" && posts.length === 0 && !error && (
           <p className="p-10 text-center text-slate-500">
             まだ投稿がありません
           </p>
         )}
-        <div className="divide-y divide-slate-800">
+        {activeTab === "posts" && (
+          <div className="divide-y divide-slate-800">
           {posts.map((post) => (
             <ProfilePostCard
               key={post.id}
@@ -208,8 +293,9 @@ export const SelfProfile = () => {
               }}
             />
           ))}
-        </div>
-        {hasMore && (
+          </div>
+        )}
+        {activeTab === "posts" && hasMore && (
           <div className="p-5 text-center">
             <button
               disabled={loadingMore}
@@ -217,6 +303,56 @@ export const SelfProfile = () => {
               className="text-sky-500 disabled:opacity-50"
             >
               {loadingMore ? "読み込み中..." : "さらに表示"}
+            </button>
+          </div>
+        )}
+        {activeTab === "comments" && commentsError && (
+          <p
+            role="alert"
+            className="border-b border-slate-800 p-4 text-center text-sm text-red-400"
+          >
+            {commentsError}
+          </p>
+        )}
+        {activeTab === "comments" &&
+          comments.length === 0 &&
+          !commentsError && (
+            <p className="p-10 text-center text-slate-500">
+              まだコメントがありません
+            </p>
+          )}
+        {activeTab === "comments" &&
+          comments.map((comment) => (
+            <div
+              key={comment.id}
+              role="link"
+              tabIndex={0}
+              onClick={() => navigate(`/post/${comment.post_id}/detail`)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  navigate(`/post/${comment.post_id}/detail`);
+                }
+              }}
+              className="cursor-pointer hover:bg-slate-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-500"
+            >
+              <CommentItem
+                comment={comment}
+                canDelete
+                onDelete={(target) => {
+                  setDeleteCommentError("");
+                  setDeleteCommentTarget(target);
+                }}
+              />
+            </div>
+          ))}
+        {activeTab === "comments" && hasMoreComments && (
+          <div className="p-5 text-center">
+            <button
+              disabled={loadingMoreComments}
+              onClick={loadMoreComments}
+              className="text-sky-500 disabled:opacity-50"
+            >
+              {loadingMoreComments ? "読み込み中..." : "さらに表示"}
             </button>
           </div>
         )}
@@ -241,6 +377,14 @@ export const SelfProfile = () => {
           error={deleteError}
           onConfirm={handleDelete}
           onClose={() => setDeleteTarget(null)}
+        />
+      )}
+      {deleteCommentTarget && (
+        <DeleteCommentModal
+          deleting={deletingComment}
+          error={deleteCommentError}
+          onConfirm={handleDeleteComment}
+          onClose={() => setDeleteCommentTarget(null)}
         />
       )}
     </div>
