@@ -7,6 +7,8 @@ export type Post = {
   doc: string;
   image_url: string | null;
   created_at: string;
+  retweet_count: number;
+  retweeted_by_me: boolean;
 };
 
 export type PostsPage = {
@@ -100,6 +102,64 @@ export const deletePost = async (postID: number): Promise<void> => {
     | { error?: { message?: string } }
     | null;
   throw new Error(body?.error?.message ?? "投稿を削除できませんでした");
+};
+
+export const retweetPost = async (
+  postID: number,
+): Promise<Pick<Post, "retweet_count" | "retweeted_by_me">> => {
+  const response = await fetch(`${API_BASE_URL}/api/posts/${postID}/retweets`, {
+    method: "POST",
+    credentials: "include",
+  });
+  const body = (await response.json().catch(() => null)) as
+    | Pick<Post, "retweet_count" | "retweeted_by_me">
+    | { error?: { message?: string } }
+    | null;
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "リツイートできませんでした");
+  }
+  return body as Pick<Post, "retweet_count" | "retweeted_by_me">;
+};
+
+export const undoRetweet = async (
+  postID: number,
+): Promise<Pick<Post, "retweet_count" | "retweeted_by_me">> => {
+  const response = await fetch(`${API_BASE_URL}/api/posts/${postID}/retweets`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  const body = (await response.json().catch(() => null)) as
+    | Pick<Post, "retweet_count" | "retweeted_by_me">
+    | { error?: { message?: string } }
+    | null;
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "リツイートを解除できませんでした");
+  }
+  return body as Pick<Post, "retweet_count" | "retweeted_by_me">;
+};
+
+export const getMyRetweets = async (
+  limit = 20,
+  offset = 0,
+): Promise<PostsPage> => {
+  const query = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const response = await fetch(`${API_BASE_URL}/api/me/retweets?${query}`, {
+    credentials: "include",
+  });
+  const body = (await response.json().catch(() => null)) as
+    | PostsPage
+    | { error?: { message?: string } }
+    | null;
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "リツイート一覧を取得できませんでした");
+  }
+  return body as PostsPage;
 };
 
 export const resolveImageURL = (imageURL: string) =>
