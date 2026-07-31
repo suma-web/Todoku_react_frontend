@@ -9,6 +9,8 @@ export type Post = {
   created_at: string;
   retweet_count: number;
   retweeted_by_me: boolean;
+  like_count: number;
+  liked_by_me: boolean;
 };
 
 export type PostsPage = {
@@ -160,6 +162,42 @@ export const getMyRetweets = async (
     throw new Error(message ?? "リツイート一覧を取得できませんでした");
   }
   return body as PostsPage;
+};
+
+export const likePost = async (
+  postID: number,
+): Promise<Pick<Post, "like_count" | "liked_by_me">> => {
+  const response = await fetch(`${API_BASE_URL}/api/posts/${postID}/likes`, {
+    method: "POST",
+    credentials: "include",
+  });
+  const body = (await response.json().catch(() => null)) as
+    | Pick<Post, "like_count" | "liked_by_me">
+    | { error?: { message?: string } }
+    | null;
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "いいねできませんでした");
+  }
+  return body as Pick<Post, "like_count" | "liked_by_me">;
+};
+
+export const undoLike = async (
+  postID: number,
+): Promise<Pick<Post, "like_count" | "liked_by_me">> => {
+  const response = await fetch(`${API_BASE_URL}/api/posts/${postID}/likes`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  const body = (await response.json().catch(() => null)) as
+    | Pick<Post, "like_count" | "liked_by_me">
+    | { error?: { message?: string } }
+    | null;
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "いいねを解除できませんでした");
+  }
+  return body as Pick<Post, "like_count" | "liked_by_me">;
 };
 
 export const resolveImageURL = (imageURL: string) =>

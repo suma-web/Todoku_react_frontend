@@ -4,8 +4,10 @@ import { getCurrentUser, type CurrentUser } from "../../api/user";
 import { API_BASE_URL } from "../../api/base";
 import {
   getPosts,
+  likePost,
   resolveImageURL,
   retweetPost,
+  undoLike,
   undoRetweet,
   type Post,
 } from "../../api/posts";
@@ -25,6 +27,7 @@ export const Home = () => {
   const [retweetingPostIDs, setRetweetingPostIDs] = useState<Set<number>>(
     new Set(),
   );
+  const [likingPostIDs, setLikingPostIDs] = useState<Set<number>>(new Set());
   const [commentTarget, setCommentTarget] = useState<Post | null>(null);
   const [postData, setPostData] = useState({
     doc: "",
@@ -219,6 +222,38 @@ export const Home = () => {
       );
     } finally {
       setRetweetingPostIDs((current) => {
+        const next = new Set(current);
+        next.delete(post.id);
+        return next;
+      });
+    }
+  };
+
+  const handleLike = async (post: Post) => {
+    if (likingPostIDs.has(post.id)) return;
+    setLikingPostIDs((current) => new Set(current).add(post.id));
+    setPostsError("");
+    try {
+      const result = post.liked_by_me
+        ? await undoLike(post.id)
+        : await likePost(post.id);
+      setPosts((current) =>
+        current.map((item) =>
+          item.id === post.id
+            ? {
+                ...item,
+                like_count: result.like_count,
+                liked_by_me: result.liked_by_me,
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      setPostsError(
+        error instanceof Error ? error.message : "いいねできませんでした",
+      );
+    } finally {
+      setLikingPostIDs((current) => {
         const next = new Set(current);
         next.delete(post.id);
         return next;
@@ -731,10 +766,26 @@ export const Home = () => {
                         {post.retweet_count}
                       </span>
                     </button>
-                    <span>
+                    <button
+                      type="button"
+                      aria-label={
+                        post.liked_by_me
+                          ? `${post.name}の投稿のいいねを解除`
+                          : `${post.name}の投稿にいいね`
+                      }
+                      disabled={likingPostIDs.has(post.id)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void handleLike(post);
+                      }}
+                      onKeyDown={(event) => event.stopPropagation()}
+                      className={`flex items-center gap-1 rounded-full p-1 hover:bg-pink-500/10 hover:text-pink-500 disabled:cursor-default ${
+                        post.liked_by_me ? "text-pink-500" : ""
+                      }`}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
+                        fill={post.liked_by_me ? "currentColor" : "none"}
                         viewBox="0 0 24 24"
                         strokeWidth={1.5}
                         stroke="currentColor"
@@ -746,7 +797,8 @@ export const Home = () => {
                           d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
                         />
                       </svg>
-                    </span>
+                      <span className="text-xs">{post.like_count}</span>
+                    </button>
                     <span>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
