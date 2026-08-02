@@ -7,6 +7,7 @@ export type CurrentUser = {
   location: string;
   website: string;
   created_at: string;
+  followed_by_me: boolean;
 };
 
 export type ProfileInput = Pick<
@@ -48,3 +49,29 @@ export const updateProfile = async (input: ProfileInput): Promise<CurrentUser> =
   });
   return readUserResponse(response, "プロフィールを更新できませんでした");
 };
+
+type FollowResponse = { followed_by_me: boolean };
+
+const changeFollow = async (
+  userName: string,
+  method: "POST" | "DELETE",
+): Promise<FollowResponse> => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/users/${encodeURIComponent(userName)}/follow`,
+    { method, credentials: "include" },
+  );
+  const body = (await response.json().catch(() => null)) as
+    | FollowResponse
+    | { error?: { message?: string } }
+    | null;
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "フォロー状態を変更できませんでした");
+  }
+  return body as FollowResponse;
+};
+
+export const followUser = (userName: string) => changeFollow(userName, "POST");
+
+export const unfollowUser = (userName: string) =>
+  changeFollow(userName, "DELETE");
