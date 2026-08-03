@@ -676,7 +676,17 @@ export const Home = () => {
                 </div>
                 <div className="min-w-0 flex-1 space-y-3">
                   <div className="flex items-center gap-2">
-                    <span className="truncate font-bold">{post.name}</span>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        navigate(`/user/${encodeURIComponent(post.name)}`);
+                      }}
+                      onKeyDown={(event) => event.stopPropagation()}
+                      className="truncate font-bold hover:underline"
+                    >
+                      {post.name}
+                    </button>
                     <span className="shrink-0 text-sm text-slate-500">
                       @{post.name} ·{" "}
                       {new Intl.DateTimeFormat("ja-JP", {

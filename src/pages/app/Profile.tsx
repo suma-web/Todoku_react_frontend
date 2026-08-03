@@ -8,9 +8,11 @@ import {
   type Post,
 } from "../../api/posts";
 import {
+  followUser,
   getCurrentUser,
   getUserProfile,
   type CurrentUser,
+  unfollowUser,
 } from "../../api/user";
 import { EditProfileModal } from "../../components/profile/EditProfileModal";
 import { DeletePostModal } from "../../components/posts/DeletePostModal";
@@ -41,6 +43,9 @@ export const SelfProfile = () => {
   const [retweetsError, setRetweetsError] = useState("");
   const [commentsError, setCommentsError] = useState("");
   const [editing, setEditing] = useState(false);
+  const [followedByMe, setFollowedByMe] = useState(false);
+  const [changingFollow, setChangingFollow] = useState(false);
+  const [followError, setFollowError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Post | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
@@ -65,6 +70,7 @@ export const SelfProfile = () => {
         ]);
         if (active) {
           setProfile(foundProfile);
+          setFollowedByMe(foundProfile.followed_by_me);
           setViewer(current);
           setPosts(page.tweets);
           setHasMore(page.has_more);
@@ -217,6 +223,26 @@ export const SelfProfile = () => {
     }
   };
 
+  const handleToggleFollow = async () => {
+    if (!profile || changingFollow) return;
+    setChangingFollow(true);
+    setFollowError("");
+    try {
+      const response = followedByMe
+        ? await unfollowUser(profile.name)
+        : await followUser(profile.name);
+      setFollowedByMe(response.followed_by_me);
+    } catch (reason) {
+      setFollowError(
+        reason instanceof Error
+          ? reason.message
+          : "フォロー状態を変更できませんでした",
+      );
+    } finally {
+      setChangingFollow(false);
+    }
+  };
+
   if (loading)
     return (
       <div className="flex min-h-dvh items-center justify-center bg-black text-white">
@@ -261,7 +287,30 @@ export const SelfProfile = () => {
                 プロフィールを編集
               </button>
             )}
+            {!isMe && (
+              <button
+                type="button"
+                disabled={changingFollow}
+                onClick={handleToggleFollow}
+                className={`mt-3 rounded-full px-5 py-2 font-bold disabled:opacity-50 ${
+                  followedByMe
+                    ? "border border-slate-600 bg-black text-white hover:border-red-500 hover:text-red-500"
+                    : "bg-white text-black hover:bg-slate-200"
+                }`}
+              >
+                {changingFollow
+                  ? "処理中..."
+                  : followedByMe
+                    ? "フォロー中"
+                    : "フォロー"}
+              </button>
+            )}
           </div>
+          {followError && (
+            <p role="alert" className="mt-3 text-sm text-red-400">
+              {followError}
+            </p>
+          )}
           <h2 className="mt-4 text-xl font-bold">{profile.name}</h2>
           <p className="text-slate-500">@{profile.name}</p>
           {profile.bio && (
