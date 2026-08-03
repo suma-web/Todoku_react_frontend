@@ -394,6 +394,9 @@ export const Home = () => {
                   if (item.label === "プロフィール" && currentUser) {
                     navigate(`/user/${encodeURIComponent(currentUser.name)}`);
                   }
+                  if (item.label === "通知") {
+                    navigate("/notifications");
+                  }
                 }}
                 className="flex w-full items-center gap-4 rounded-full px-3 py-3 text-left text-xl transition hover:bg-slate-900 lg:text-lg"
               >
