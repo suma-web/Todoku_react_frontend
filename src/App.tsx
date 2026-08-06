@@ -9,6 +9,7 @@ import { PostCreate } from "./pages/app/PostCreate";
 import { PostDetail } from "./pages/app/PostDetail";
 import { SelfProfile } from "./pages/app/Profile";
 import { ProtectedRoute } from "./pages/auth/ProtectedRoute";
+import { Notifications } from "./pages/app/Notifications";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
             <Route path="/post/create" element={<PostCreate />} />
             <Route path="/post/:id/detail" element={<PostDetail />} />
             <Route path="/user/:name" element={<SelfProfile />} />
+            <Route path="/notifications" element={<Notifications />} />
           </Route>
           
           <Route path="/" element={<Navigate to="/home" replace />} />
