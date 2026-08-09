@@ -397,6 +397,9 @@ export const Home = () => {
                   if (item.label === "通知") {
                     navigate("/notifications");
                   }
+                  if (item.label === "メッセージ") {
+                    navigate("/messages");
+                  }
                 }}
                 className="flex w-full items-center gap-4 rounded-full px-3 py-3 text-left text-xl transition hover:bg-slate-900 lg:text-lg"
               >

@@ -10,6 +10,7 @@ import { PostDetail } from "./pages/app/PostDetail";
 import { SelfProfile } from "./pages/app/Profile";
 import { ProtectedRoute } from "./pages/auth/ProtectedRoute";
 import { Notifications } from "./pages/app/Notifications";
+import { Messages, MessageGroupDetail } from "./pages/app/Messages";
 
 function App() {
   return (
@@ -29,6 +30,8 @@ function App() {
             <Route path="/post/:id/detail" element={<PostDetail />} />
             <Route path="/user/:name" element={<SelfProfile />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/messages/:groupId" element={<MessageGroupDetail />} />
           </Route>
           
           <Route path="/" element={<Navigate to="/home" replace />} />
