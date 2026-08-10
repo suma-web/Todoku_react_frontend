@@ -11,6 +11,7 @@ import { SelfProfile } from "./pages/app/Profile";
 import { ProtectedRoute } from "./pages/auth/ProtectedRoute";
 import { Notifications } from "./pages/app/Notifications";
 import { Messages, MessageGroupDetail } from "./pages/app/Messages";
+import { Bookmarks } from "./pages/app/Bookmarks";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/messages/:groupId" element={<MessageGroupDetail />} />
+            <Route path="/bookmarks" element={<Bookmarks />} />
           </Route>
           
           <Route path="/" element={<Navigate to="/home" replace />} />
