@@ -11,6 +11,7 @@ export type Post = {
   retweeted_by_me: boolean;
   like_count: number;
   liked_by_me: boolean;
+  bookmarked_by_me: boolean;
 };
 
 export type PostsPage = {
@@ -198,6 +199,64 @@ export const undoLike = async (
     throw new Error(message ?? "いいねを解除できませんでした");
   }
   return body as Pick<Post, "like_count" | "liked_by_me">;
+};
+
+export const bookmarkPost = async (
+  postID: number,
+): Promise<Pick<Post, "bookmarked_by_me">> => {
+  const response = await fetch(`${API_BASE_URL}/api/posts/${postID}/bookmarks`, {
+    method: "POST",
+    credentials: "include",
+  });
+  const body = (await response.json().catch(() => null)) as
+    | Pick<Post, "bookmarked_by_me">
+    | { error?: { message?: string } }
+    | null;
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "ブックマークできませんでした");
+  }
+  return body as Pick<Post, "bookmarked_by_me">;
+};
+
+export const undoBookmark = async (
+  postID: number,
+): Promise<Pick<Post, "bookmarked_by_me">> => {
+  const response = await fetch(`${API_BASE_URL}/api/posts/${postID}/bookmarks`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  const body = (await response.json().catch(() => null)) as
+    | Pick<Post, "bookmarked_by_me">
+    | { error?: { message?: string } }
+    | null;
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "ブックマークを解除できませんでした");
+  }
+  return body as Pick<Post, "bookmarked_by_me">;
+};
+
+export const getBookmarks = async (
+  limit = 20,
+  offset = 0,
+): Promise<PostsPage> => {
+  const query = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const response = await fetch(`${API_BASE_URL}/api/bookmarks?${query}`, {
+    credentials: "include",
+  });
+  const body = (await response.json().catch(() => null)) as
+    | PostsPage
+    | { error?: { message?: string } }
+    | null;
+  if (!response.ok) {
+    const message = body && "error" in body ? body.error?.message : undefined;
+    throw new Error(message ?? "ブックマーク一覧を取得できませんでした");
+  }
+  return body as PostsPage;
 };
 
 export const resolveImageURL = (imageURL: string) =>

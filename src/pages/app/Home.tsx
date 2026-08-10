@@ -3,11 +3,13 @@ import { useNavigate } from "react-router";
 import { getCurrentUser, type CurrentUser } from "../../api/user";
 import { API_BASE_URL } from "../../api/base";
 import {
+  bookmarkPost,
   getPosts,
   likePost,
   resolveImageURL,
   retweetPost,
   undoLike,
+  undoBookmark,
   undoRetweet,
   type Post,
 } from "../../api/posts";
@@ -28,6 +30,9 @@ export const Home = () => {
     new Set(),
   );
   const [likingPostIDs, setLikingPostIDs] = useState<Set<number>>(new Set());
+  const [bookmarkingPostIDs, setBookmarkingPostIDs] = useState<Set<number>>(
+    new Set(),
+  );
   const [commentTarget, setCommentTarget] = useState<Post | null>(null);
   const [postData, setPostData] = useState({
     doc: "",
@@ -261,6 +266,34 @@ export const Home = () => {
     }
   };
 
+  const handleBookmark = async (post: Post) => {
+    if (bookmarkingPostIDs.has(post.id)) return;
+    setBookmarkingPostIDs((current) => new Set(current).add(post.id));
+    setPostsError("");
+    try {
+      const result = post.bookmarked_by_me
+        ? await undoBookmark(post.id)
+        : await bookmarkPost(post.id);
+      setPosts((current) =>
+        current.map((item) =>
+          item.id === post.id
+            ? { ...item, bookmarked_by_me: result.bookmarked_by_me }
+            : item,
+        ),
+      );
+    } catch (error) {
+      setPostsError(
+        error instanceof Error ? error.message : "ブックマークできませんでした",
+      );
+    } finally {
+      setBookmarkingPostIDs((current) => {
+        const next = new Set(current);
+        next.delete(post.id);
+        return next;
+      });
+    }
+  };
+
   const navigationItems = [
     {
       icon: (
@@ -351,11 +384,11 @@ export const Home = () => {
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+            d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
           />
         </svg>
       ),
-      label: "リスト",
+      label: "ブックマーク",
     },
     {
       icon: (
@@ -399,6 +432,9 @@ export const Home = () => {
                   }
                   if (item.label === "メッセージ") {
                     navigate("/messages");
+                  }
+                  if (item.label === "ブックマーク") {
+                    navigate("/bookmarks");
                   }
                 }}
                 className="flex w-full items-center gap-4 rounded-full px-3 py-3 text-left text-xl transition hover:bg-slate-900 lg:text-lg"
@@ -752,9 +788,7 @@ export const Home = () => {
                           ? `${post.name}の投稿のリツイートを解除`
                           : `${post.name}の投稿をリツイート`
                       }
-                      disabled={
-                        retweetingPostIDs.has(post.id)
-                      }
+                      disabled={retweetingPostIDs.has(post.id)}
                       onClick={(event) => {
                         event.stopPropagation();
                         void handleRetweet(post);
@@ -778,9 +812,7 @@ export const Home = () => {
                           d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
                         />
                       </svg>
-                      <span className="text-xs">
-                        {post.retweet_count}
-                      </span>
+                      <span className="text-xs">{post.retweet_count}</span>
                     </button>
                     <button
                       type="button"
@@ -814,6 +846,38 @@ export const Home = () => {
                         />
                       </svg>
                       <span className="text-xs">{post.like_count}</span>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={
+                        post.bookmarked_by_me
+                          ? `${post.name}の投稿のブックマークを解除`
+                          : `${post.name}の投稿をブックマーク`
+                      }
+                      disabled={bookmarkingPostIDs.has(post.id)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void handleBookmark(post);
+                      }}
+                      onKeyDown={(event) => event.stopPropagation()}
+                      className={`rounded-full p-1 hover:bg-sky-500/10 hover:text-sky-400 disabled:cursor-default ${
+                        post.bookmarked_by_me ? "text-sky-400" : ""
+                      }`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill={post.bookmarked_by_me ? "currentColor" : "none"}
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
+                        />
+                      </svg>
                     </button>
                     <span>
                       <svg
