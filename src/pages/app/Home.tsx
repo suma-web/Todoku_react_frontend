@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { getCurrentUser, type CurrentUser } from "../../api/user";
+import {
+  deleteAccount,
+  getCurrentUser,
+  logout,
+  type CurrentUser,
+} from "../../api/user";
 import { API_BASE_URL } from "../../api/base";
 import {
   bookmarkPost,
@@ -14,6 +19,7 @@ import {
   type Post,
 } from "../../api/posts";
 import { CommentModal } from "../../components/comments/CommentModal";
+import { DeleteAccountModal } from "../../components/home/DeleteAccountModal";
 
 const POSTS_PER_PAGE = 10;
 
@@ -33,6 +39,11 @@ export const Home = () => {
   const [bookmarkingPostIDs, setBookmarkingPostIDs] = useState<Set<number>>(
     new Set(),
   );
+  const [accountAction, setAccountAction] = useState<
+    "logout" | "delete" | null
+  >(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [commentTarget, setCommentTarget] = useState<Post | null>(null);
   const [postData, setPostData] = useState({
     doc: "",
@@ -294,6 +305,36 @@ export const Home = () => {
     }
   };
 
+  const handleLogout = async () => {
+    if (accountAction) return;
+    setAccountAction("logout");
+    setErrorMessage("");
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "ログアウトできませんでした",
+      );
+      setAccountAction(null);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (accountAction) return;
+    setAccountAction("delete");
+    setDeleteError("");
+    try {
+      await deleteAccount();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      setDeleteError(
+        error instanceof Error ? error.message : "退会できませんでした",
+      );
+      setAccountAction(null);
+    }
+  };
+
   const navigationItems = [
     {
       icon: (
@@ -409,6 +450,44 @@ export const Home = () => {
       ),
       label: "プロフィール",
     },
+    {
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="size-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
+          />
+        </svg>
+      ),
+      label: "ログアウト",
+    },
+    {
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="size-6"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 18 18 6M6 6l12 12"
+          />
+        </svg>
+      ),
+      label: "退会",
+    },
     { icon: "⋯", label: "もっと見る" },
   ];
 
@@ -436,8 +515,21 @@ export const Home = () => {
                   if (item.label === "ブックマーク") {
                     navigate("/bookmarks");
                   }
+                  if (item.label === "ログアウト") {
+                    void handleLogout();
+                  }
+                  if (item.label === "退会") {
+                    setDeleteError("");
+                    setShowDeleteDialog(true);
+                  }
                 }}
-                className="flex w-full items-center gap-4 rounded-full px-3 py-3 text-left text-xl transition hover:bg-slate-900 lg:text-lg"
+                disabled={
+                  accountAction !== null &&
+                  (item.label === "ログアウト" || item.label === "退会")
+                }
+                className={`flex w-full items-center gap-4 rounded-full px-3 py-3 text-left text-xl transition hover:bg-slate-900 disabled:opacity-50 lg:text-lg ${
+                  item.label === "退会" ? "text-red-400" : ""
+                }`}
               >
                 <span className="w-8 text-center text-2xl">{item.icon}</span>
                 <span className="hidden lg:inline">{item.label}</span>
@@ -949,6 +1041,17 @@ export const Home = () => {
           post={commentTarget}
           currentUser={currentUser}
           onClose={() => setCommentTarget(null)}
+        />
+      )}
+      {showDeleteDialog && (
+        <DeleteAccountModal
+          error={deleteError}
+          isDeleting={accountAction === "delete"}
+          onClose={() => {
+            setShowDeleteDialog(false);
+            setDeleteError("");
+          }}
+          onConfirm={() => void handleDeleteAccount()}
         />
       )}
     </div>
