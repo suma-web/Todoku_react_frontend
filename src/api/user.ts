@@ -75,3 +75,25 @@ export const followUser = (userName: string) => changeFollow(userName, "POST");
 
 export const unfollowUser = (userName: string) =>
   changeFollow(userName, "DELETE");
+
+const performAccountAction = async (
+  path: string,
+  method: "POST" | "DELETE",
+  fallback: string,
+): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    credentials: "include",
+  });
+  if (response.ok) return;
+  const body = (await response.json().catch(() => null)) as
+    | { error?: { message?: string } }
+    | null;
+  throw new Error(body?.error?.message ?? fallback);
+};
+
+export const logout = () =>
+  performAccountAction("/api/logout", "POST", "ログアウトできませんでした");
+
+export const deleteAccount = () =>
+  performAccountAction("/api/me", "DELETE", "退会できませんでした");
