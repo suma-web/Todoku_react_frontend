@@ -16,6 +16,10 @@ import { RoleRoute } from "./pages/auth/RoleRoute";
 import { GroupsPage } from "./pages/admin/GroupsPage";
 import { SchoolPostCreatePage } from "./pages/school/SchoolPostCreatePage";
 import { TimelinePage } from "./pages/school/TimelinePage";
+import { QuestionsPage } from "./pages/school/QuestionsPage";
+import { QuestionCreatePage } from "./pages/school/QuestionCreatePage";
+import { QuestionDetailPage } from "./pages/school/QuestionDetailPage";
+import { QuestionCategoriesPage } from "./pages/admin/QuestionCategoriesPage";
 
 function App() {
   return (
@@ -39,9 +43,13 @@ function App() {
             <Route path="/messages" element={<Messages />} />
             <Route path="/messages/:groupId" element={<MessageGroupDetail />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
+            <Route path="/questions" element={<QuestionsPage />} />
+            <Route path="/questions/new" element={<QuestionCreatePage />} />
+            <Route path="/questions/:id" element={<QuestionDetailPage />} />
           </Route>
           <Route element={<RoleRoute roles={["admin"]} />}>
             <Route path="/admin/groups" element={<GroupsPage />} />
+            <Route path="/admin/question-categories" element={<QuestionCategoriesPage />} />
           </Route>
           <Route element={<RoleRoute roles={["teacher", "admin"]} />}>
             <Route path="/school-posts/new" element={<SchoolPostCreatePage />} />
