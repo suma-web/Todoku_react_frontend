@@ -14,6 +14,7 @@ import { Messages, MessageGroupDetail } from "./pages/app/Messages";
 import { Bookmarks } from "./pages/app/Bookmarks";
 import { RoleRoute } from "./pages/auth/RoleRoute";
 import { GroupsPage } from "./pages/admin/GroupsPage";
+import { SchoolPostCreatePage } from "./pages/school/SchoolPostCreatePage";
 
 function App() {
   return (
@@ -39,6 +40,9 @@ function App() {
           </Route>
           <Route element={<RoleRoute roles={["admin"]} />}>
             <Route path="/admin/groups" element={<GroupsPage />} />
+          </Route>
+          <Route element={<RoleRoute roles={["teacher", "admin"]} />}>
+            <Route path="/school-posts/new" element={<SchoolPostCreatePage />} />
           </Route>
           
           <Route path="/" element={<Navigate to="/home" replace />} />
