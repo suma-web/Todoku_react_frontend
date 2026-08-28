@@ -18,7 +18,8 @@ type CreateSchoolPostInput = Pick<
   "type" | "title" | "content" | "priority" | "expires_at" | "group_ids"
 >;
 
-const read = async <T,>(response: Response): Promise<T> => {
+const read = async <T,>(request: Response | Promise<Response>): Promise<T> => {
+  const response = await request;
   const body = await response.json().catch(() => null);
   if (!response.ok) {
     throw new Error(body?.error?.message ?? "処理に失敗しました");
@@ -40,3 +41,17 @@ export const getTimeline = () =>
   read<SchoolPost[]>(
     fetch(`${API_BASE_URL}/api/timeline`, { credentials: "include" }),
   );
+
+export const markSchoolPostRead = (id: number) =>
+  fetch(`${API_BASE_URL}/api/school-posts/${id}/read`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+export const confirmSchoolPost = async (id: number) => {
+  const response = await fetch(`${API_BASE_URL}/api/school-posts/${id}/confirm`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) throw new Error("確認状態を保存できませんでした");
+};
