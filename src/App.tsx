@@ -40,7 +40,6 @@ function App() {
           <Route path="/register/password" element={<RegisterStep2 />} />
 
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<RoleHomePage />} />
             <Route path="/home" element={<Home />} />
             <Route path="/post/create" element={<PostCreate />} />
             <Route path="/post/:id/detail" element={<PostDetail />} />
@@ -50,6 +49,7 @@ function App() {
             <Route path="/messages/:groupId" element={<MessageGroupDetail />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
             <Route element={<SchoolLayout />}>
+              <Route index element={<RoleHomePage />} />
               <Route path="/timeline" element={<TimelinePage />} />
               <Route path="/questions" element={<QuestionsPage />} />
               <Route path="/questions/new" element={<QuestionCreatePage />} />
