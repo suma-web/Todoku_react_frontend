@@ -1,9 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { ApiError, login } from "../../../api/auth";
+import { useAuth } from "../../../contexts/auth";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
+  const { refresh } = useAuth();
   const [loginData, setLoginData] = useState({
     name: "",
     password: "",
@@ -27,6 +29,7 @@ export const LoginPage = () => {
 
     try {
       await login(loginData);
+      await refresh();
 
       setLoginData({
         name: "",
