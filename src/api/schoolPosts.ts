@@ -35,3 +35,8 @@ export const createSchoolPost = (input: CreateSchoolPostInput) =>
       body: JSON.stringify(input),
     }),
   );
+
+export const getTimeline = () =>
+  read<SchoolPost[]>(
+    fetch(`${API_BASE_URL}/api/timeline`, { credentials: "include" }),
+  );
