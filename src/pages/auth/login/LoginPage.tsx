@@ -36,7 +36,7 @@ export const LoginPage = () => {
         password: "",
       });
 
-      navigate("/home");
+      navigate("/");
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         setErrorMessage("ユーザー名またはパスワードが違います");
