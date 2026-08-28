@@ -41,6 +41,9 @@ export const getTimeline = () =>
   read<SchoolPost[]>(
     fetch(`${API_BASE_URL}/api/timeline`, { credentials: "include" }),
   );
+export const getSchoolPost=(id:number)=>read<SchoolPost>(fetch(`${API_BASE_URL}/api/school-posts/${id}`,{credentials:"include"}));
+export const getSchoolPostStatus=(id:number)=>read<{target_count:number;read_count:number;confirmed_count:number;unconfirmed_count:number}>(fetch(`${API_BASE_URL}/api/school-posts/${id}/status`,{credentials:"include"}));
+export const getUnconfirmedUsers=(id:number)=>read<Array<{id:number;name:string}>>(fetch(`${API_BASE_URL}/api/school-posts/${id}/unconfirmed`,{credentials:"include"}));
 
 export const markSchoolPostRead = (id: number) =>
   fetch(`${API_BASE_URL}/api/school-posts/${id}/read`, {

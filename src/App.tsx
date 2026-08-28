@@ -21,6 +21,11 @@ import { QuestionCreatePage } from "./pages/school/QuestionCreatePage";
 import { QuestionDetailPage } from "./pages/school/QuestionDetailPage";
 import { QuestionCategoriesPage } from "./pages/admin/QuestionCategoriesPage";
 import { SearchPage } from "./pages/school/SearchPage";
+import { SchoolLayout } from "./components/school/SchoolLayout";
+import { RoleHomePage } from "./pages/school/RoleHomePage";
+import { UsersPage } from "./pages/admin/UsersPage";
+import { SchoolPostDetailPage } from "./pages/school/SchoolPostDetailPage";
+import { PostStatusPage } from "./pages/school/PostStatusPage";
 
 function App() {
   return (
@@ -35,8 +40,8 @@ function App() {
           <Route path="/register/password" element={<RegisterStep2 />} />
 
           <Route element={<ProtectedRoute />}>
+            <Route path="/" element={<RoleHomePage />} />
             <Route path="/home" element={<Home />} />
-            <Route path="/timeline" element={<TimelinePage />} />
             <Route path="/post/create" element={<PostCreate />} />
             <Route path="/post/:id/detail" element={<PostDetail />} />
             <Route path="/user/:name" element={<SelfProfile />} />
@@ -44,21 +49,30 @@ function App() {
             <Route path="/messages" element={<Messages />} />
             <Route path="/messages/:groupId" element={<MessageGroupDetail />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
-            <Route path="/questions" element={<QuestionsPage />} />
-            <Route path="/questions/new" element={<QuestionCreatePage />} />
-            <Route path="/questions/:id" element={<QuestionDetailPage />} />
-            <Route path="/search" element={<SearchPage />} />
+            <Route element={<SchoolLayout />}>
+              <Route path="/timeline" element={<TimelinePage />} />
+              <Route path="/questions" element={<QuestionsPage />} />
+              <Route path="/questions/new" element={<QuestionCreatePage />} />
+              <Route path="/questions/:id" element={<QuestionDetailPage />} />
+              <Route path="/search" element={<SearchPage />} />
+              <Route path="/school-posts/:id" element={<SchoolPostDetailPage />} />
+            </Route>
           </Route>
           <Route element={<RoleRoute roles={["admin"]} />}>
-            <Route path="/admin/groups" element={<GroupsPage />} />
-            <Route path="/admin/question-categories" element={<QuestionCategoriesPage />} />
+            <Route element={<SchoolLayout />}>
+              <Route path="/admin/users" element={<UsersPage />} />
+              <Route path="/admin/groups" element={<GroupsPage />} />
+              <Route path="/admin/question-categories" element={<QuestionCategoriesPage />} />
+            </Route>
           </Route>
           <Route element={<RoleRoute roles={["teacher", "admin"]} />}>
-            <Route path="/school-posts/new" element={<SchoolPostCreatePage />} />
+            <Route element={<SchoolLayout />}>
+              <Route path="/school-posts/new" element={<SchoolPostCreatePage />} />
+              <Route path="/teacher/school-posts/:id/status" element={<PostStatusPage />} />
+            </Route>
           </Route>
-          
-          <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="*" element={<Navigate to="/home" replace />} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </RegisterProvider>
     </BrowserRouter>
