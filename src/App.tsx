@@ -12,6 +12,8 @@ import { ProtectedRoute } from "./pages/auth/ProtectedRoute";
 import { Notifications } from "./pages/app/Notifications";
 import { Messages, MessageGroupDetail } from "./pages/app/Messages";
 import { Bookmarks } from "./pages/app/Bookmarks";
+import { RoleRoute } from "./pages/auth/RoleRoute";
+import { GroupsPage } from "./pages/admin/GroupsPage";
 
 function App() {
   return (
@@ -34,6 +36,9 @@ function App() {
             <Route path="/messages" element={<Messages />} />
             <Route path="/messages/:groupId" element={<MessageGroupDetail />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
+          </Route>
+          <Route element={<RoleRoute roles={["admin"]} />}>
+            <Route path="/admin/groups" element={<GroupsPage />} />
           </Route>
           
           <Route path="/" element={<Navigate to="/home" replace />} />
