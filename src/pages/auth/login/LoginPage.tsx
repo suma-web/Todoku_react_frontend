@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { ApiError, login } from "../../../api/auth";
 import { useAuth } from "../../../contexts/auth";
+import schoolCommunicationImage from "../../../assets/school-communication.png";
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -54,16 +55,18 @@ export const LoginPage = () => {
 
   return (
     <div>
-      <main className="flex min-h-screen items-center justify-center bg-black/40 px-4 py-10">
+      <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-10">
         <form
           onSubmit={handleSubmit}
-          className="relative min-h-[590px] w-full max-w-[600px] rounded-2xl bg-white px-8 pb-12 pt-16 shadow-xl sm:px-12"
+          className="w-full max-w-[600px] rounded-2xl bg-white px-8 pb-12 pt-8 shadow-xl sm:px-12"
         >
-          <div className="absolute left-1/2 top-4 -translate-x-1/2 text-6xl font-black text-black-500">
-            𝕏
-          </div>
+          <img
+            src={schoolCommunicationImage}
+            alt="校内コミュニケーション"
+            className="mx-auto h-44 w-44 object-contain sm:h-52 sm:w-52"
+          />
 
-          <h1 className="mb-7 mt-13 text-2xl font-bold text-slate-900">
+          <h1 className="mb-7 text-2xl font-bold text-slate-900">
             ログイン
           </h1>
 
