@@ -14,6 +14,8 @@ import { Messages, MessageGroupDetail } from "./pages/app/Messages";
 import { Bookmarks } from "./pages/app/Bookmarks";
 import { RoleRoute } from "./pages/auth/RoleRoute";
 import { GroupsPage } from "./pages/admin/GroupsPage";
+import { SchoolPostCreatePage } from "./pages/school/SchoolPostCreatePage";
+import { TimelinePage } from "./pages/school/TimelinePage";
 
 function App() {
   return (
@@ -29,6 +31,7 @@ function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/home" element={<Home />} />
+            <Route path="/timeline" element={<TimelinePage />} />
             <Route path="/post/create" element={<PostCreate />} />
             <Route path="/post/:id/detail" element={<PostDetail />} />
             <Route path="/user/:name" element={<SelfProfile />} />
@@ -39,6 +42,9 @@ function App() {
           </Route>
           <Route element={<RoleRoute roles={["admin"]} />}>
             <Route path="/admin/groups" element={<GroupsPage />} />
+          </Route>
+          <Route element={<RoleRoute roles={["teacher", "admin"]} />}>
+            <Route path="/school-posts/new" element={<SchoolPostCreatePage />} />
           </Route>
           
           <Route path="/" element={<Navigate to="/home" replace />} />
