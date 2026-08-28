@@ -1,19 +1,10 @@
-import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { getCurrentUser } from "../../api/user";
+import { useAuth } from "../../contexts/AuthContext";
 
 export const ProtectedRoute = () => {
-  const [status, setStatus] = useState<"loading" | "authenticated" | "guest">(
-    "loading",
-  );
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    getCurrentUser()
-      .then(() => setStatus("authenticated"))
-      .catch(() => setStatus("guest"));
-  }, []);
-
-  if (status === "loading") {
+  if (loading) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-black text-white">
         読み込み中...
@@ -21,7 +12,7 @@ export const ProtectedRoute = () => {
     );
   }
 
-  if (status === "guest") {
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
 
