@@ -55,10 +55,10 @@ export const LoginPage = () => {
 
   return (
     <div>
-      <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-10">
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-sky-50 via-white to-emerald-50 px-4 py-10">
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-[600px] rounded-2xl bg-white px-8 pb-12 pt-8 shadow-xl sm:px-12"
+          className="w-full max-w-[600px] rounded-3xl border border-sky-100 bg-white px-8 pb-12 pt-8 shadow-[0_24px_70px_rgba(37,137,232,0.14)] sm:px-12"
         >
           <img
             src={schoolCommunicationImage}
@@ -84,7 +84,7 @@ export const LoginPage = () => {
                     name: e.target.value,
                   })
                 }
-                className="h-16 w-full border-b-2 border-slate-500 bg-slate-100 px-3 outline-none transition focus:border-sky-500"
+                className="h-16 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
               />
             </label>
             <label className="block">
@@ -98,7 +98,7 @@ export const LoginPage = () => {
                     password: e.target.value,
                   })
                 }
-                className="h-16 w-full border-b-2 border-slate-500 bg-slate-100 px-3 outline-none transition focus:border-sky-500"
+                className="h-16 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
               />
             </label>
             {errorMessage && (
@@ -111,7 +111,7 @@ export const LoginPage = () => {
           <button
             type="submit"
             disabled={!canSubmit}
-            className="w-full mt-20 rounded-full bg-black px-5 py-2 font-bold text-white transition hover:bg-gray-500 disabled:cursor-not-allowed disabled:opacity-40 flex justify-center"
+            className="mt-12 flex w-full justify-center rounded-full bg-sky-600 px-5 py-3 font-bold text-white transition hover:bg-sky-500 disabled:cursor-not-allowed disabled:opacity-40"
             onClick={() => setLoading(true)}
           >
             {loading ? (
