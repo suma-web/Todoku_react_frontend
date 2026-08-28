@@ -8,6 +8,8 @@ export type CurrentUser = {
   website: string;
   created_at: string;
   followed_by_me: boolean;
+  role: "student" | "teacher" | "admin";
+  is_active: boolean;
 };
 
 export type ProfileInput = Pick<
