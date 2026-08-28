@@ -1,8 +1,47 @@
-# Twitter Clone Frontend
+# 学校内情報・コミュニケーション基盤 Frontend
 
-Twitter風アプリケーションのフロントエンドです。React、TypeScript、Vite、Tailwind CSSで構築しています。
+学校内に分散している連絡・質問・相談を一つに集約し、必要な情報へアクセスしやすくするためのWebアプリケーションのフロントエンドです。
 
-現在は、名前・メールアドレス・生年月日・パスワードを入力する2段階の新規登録画面と、Goバックエンドの新規登録APIとの連携を実装しています。
+## 開発の背景
+
+最初はTwitterクローンとして技術学習目的で開発していました。しかし、自身の教育現場での経験から「情報が複数の場所に分散している」「質問したいときに適切な教員が分からない」という課題に着目し、既存サービスを調査したうえで、学校内情報基盤として要件を再設計しました。
+
+Twitterクローンとして実装した認証、投稿、コメント、通知などの技術要素を活かしながら、学校内での情報共有とコミュニケーションに必要な画面と操作を追加しています。
+
+## 解決したい課題
+
+- Classroom、メール、口頭など、情報経路が複数の場所に分散している
+- 生徒が誰に質問すべきか分からない
+- 担当教員が不在のときに質問・相談が止まってしまう
+- 配信した連絡が対象者に読まれ、確認されたか分からない
+
+## 解決方法
+
+- **所属別情報配信**：学年、クラス、部活動、委員会、部署単位で必要な連絡を表示
+- **質問の担当部署ルーティング**：質問カテゴリから担当部署を明確にする
+- **公開質問 / 個別相談**：質問内容に応じて公開範囲を選択
+- **既読・確認**：連絡を読んだことと確認したことを記録
+- **横断検索**：お知らせ、質問・回答、担当窓口を一つの検索画面から探す
+
+## 主な機能
+
+- ログイン・新規登録
+- Roleに応じたホーム・ナビゲーション
+- 所属別に配信された学校連絡のタイムライン
+- 連絡詳細、既読、確認
+- 教員向けの閲覧・確認状況表示
+- 公開質問、個別相談、回答、解決
+- 学校内横断検索
+- 管理者向けユーザー、Role、有効状態、所属、質問カテゴリ管理
+- Twitterクローンとして開発した投稿、プロフィール、コメント、通知、メッセージ画面
+
+## Role
+
+| Role | 主な画面・操作 |
+| --- | --- |
+| `student` | 連絡の閲覧・確認、質問・相談、検索 |
+| `teacher` | 生徒の機能に加え、連絡作成、確認状況の閲覧、質問への回答 |
+| `admin` | 教員の機能に加え、ユーザー、所属、質問カテゴリの管理 |
 
 ## 使用技術
 
@@ -14,67 +53,83 @@ Twitter風アプリケーションのフロントエンドです。React、TypeS
 - Docker / Docker Compose
 
 ## セットアップ
-### Dockerで起動する
+
+### 1. バックエンドを起動
+
+バックエンドリポジトリで実行します。
 
 ```bash
 docker compose up --build
 ```
-ブラウザで以下へアクセスします。
+
+### 2. フロントエンドを起動
+
+このリポジトリで実行します。
+
+```bash
+docker compose up --build
+```
+
+### 3. ブラウザでアクセス
 
 ```text
 http://localhost:5173/login
 ```
 
-## 画面とルート
+APIの接続先は`http://localhost:8080`です。
 
-| パス | 内容 |
-| --- | --- |
-| `/login` | ログイン画面 |
-| `/register/email_name_birthday` | 名前・メールアドレス・生年月日の入力 |
-| `/register/password` | パスワードの入力と新規登録 |
+## 主な画面とルート
 
-登録画面の入力値は `RegisterContext` で共有します。登録完了後は入力値を初期化し、ログイン画面へ遷移します。
+| パス | 対象Role | 内容 |
+| --- | --- | --- |
+| `/login` | 未ログイン | ログイン |
+| `/` | 全Role | Role別ホーム |
+| `/timeline` | 全Role | 学校からの連絡 |
+| `/school-posts/:id` | 全Role | 連絡詳細・確認 |
+| `/school-posts/new` | teacher / admin | 学校連絡の作成 |
+| `/teacher/school-posts/:id/status` | teacher / admin | 閲覧・確認状況 |
+| `/questions` | 全Role | 質問・相談一覧 |
+| `/questions/new` | 全Role | 公開質問・個別相談の作成 |
+| `/questions/:id` | 全Role | 質問詳細・回答 |
+| `/search` | 全Role | 学校内横断検索 |
+| `/admin/users` | admin | ユーザー管理 |
+| `/admin/groups` | admin | 所属管理 |
+| `/admin/question-categories` | admin | 質問カテゴリ管理 |
+| `/home` | 全Role | 旧Twitterクローン画面 |
 
-## API連携
+## デザイン
 
-新規登録時に以下のAPIを呼び出します。
+学校内で毎日利用することを想定し、薄い青灰色の背景、白いカード、濃紺の文字を使った明るく読みやすいUIにしています。緊急・重要・通常の情報を色で判別できる設計です。
 
-```http
-POST http://localhost:8080/api/signup
-Content-Type: application/json
+## 開発時の確認
+
+```bash
+npm run lint
+npm run build
 ```
 
-リクエスト例：
+Docker上で確認する場合：
 
-```json
-{
-  "name": "テストユーザー",
-  "email": "test@example.com",
-  "birthday": "2000-01-01",
-  "password": "password123"
-}
+```bash
+docker compose exec -T app npm run lint
+docker compose exec -T app npm run build
 ```
 
 ## 主なディレクトリ構成
 
 ```text
 src/
-├── api/                 # バックエンドAPIの呼び出し
-├── contexts/            # 登録フォームの状態管理
+├── api/                  # バックエンドAPIとの通信
+├── assets/               # 画像
+├── components/
+│   └── school/           # 学校機能の共通レイアウト
+├── contexts/             # 認証・登録状態
 ├── pages/
-│   └── auth/
-│       ├── login/       # ログイン画面
-│       └── register/    # 新規登録画面
-├── types/               # TypeScriptの型定義
-├── App.tsx              # ルーティング
-├── main.tsx             # エントリーポイント
-└── tailwind.css         # Tailwind CSSの読み込み
+│   ├── admin/            # 管理者画面
+│   ├── auth/             # ログイン・新規登録
+│   ├── school/           # 連絡・質問・検索・ホーム
+│   └── app/              # 旧Twitterクローン画面
+├── types/                # TypeScriptの型定義
+├── App.tsx               # ルーティング
+└── main.tsx              # エントリーポイント
 ```
-
-## バックエンドとの起動順序
-
-新規登録を動作確認するときは、以下を起動します。
-
-1. GoバックエンドとPostgreSQL
-2. Reactフロントエンド
-3. `http://localhost:5173/login` へアクセス
