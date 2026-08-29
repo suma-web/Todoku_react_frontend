@@ -64,3 +64,14 @@ export const markSchoolPostRead = (id: number) =>
     method: "POST",
     credentials: "include",
   }));
+
+export const deleteSchoolPost = async (id: number) => {
+  const response = await fetch(`${API_BASE_URL}/api/school-posts/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error?.message ?? "連絡を削除できませんでした");
+  }
+};
