@@ -37,11 +37,16 @@ export const getCurrentUser = async (): Promise<CurrentUser> => {
 };
 
 export const getUserProfile = async (name: string): Promise<CurrentUser> => {
-  const response = await fetch(`${API_BASE_URL}/api/users/${encodeURIComponent(name)}`, { credentials: "include" });
+  const response = await fetch(
+    `${API_BASE_URL}/api/users/${encodeURIComponent(name)}`,
+    { credentials: "include" },
+  );
   return readUserResponse(response, "プロフィールを取得できませんでした");
 };
 
-export const updateProfile = async (input: ProfileInput): Promise<CurrentUser> => {
+export const updateProfile = async (
+  input: ProfileInput,
+): Promise<CurrentUser> => {
   const response = await fetch(`${API_BASE_URL}/api/me`, {
     method: "PATCH",
     credentials: "include",
@@ -61,9 +66,9 @@ const performAccountAction = async (
     credentials: "include",
   });
   if (response.ok) return;
-  const body = (await response.json().catch(() => null)) as
-    | { error?: { message?: string } }
-    | null;
+  const body = (await response.json().catch(() => null)) as {
+    error?: { message?: string };
+  } | null;
   throw new Error(body?.error?.message ?? fallback);
 };
 
