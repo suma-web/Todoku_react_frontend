@@ -1,4 +1,7 @@
-export const schoolPostAgeWarning = (createdAt: string, expiresAt?: string | null) => {
+export const schoolPostAgeWarning = (
+  createdAt: string,
+  expiresAt?: string | null,
+) => {
   if (expiresAt) return "";
   const created = new Date(createdAt);
   const now = new Date();
@@ -8,9 +11,12 @@ export const schoolPostAgeWarning = (createdAt: string, expiresAt?: string | nul
     value.setMonth(value.getMonth() - months);
     return value;
   };
-  if (created <= threshold(2)) return "2年前の投稿です。古い情報の可能性があります";
-  if (created <= threshold(1)) return "1年前の投稿です。古い情報の可能性があります";
-  if (created <= threshold(0, 6)) return "半年前の投稿です。古い情報の可能性があります";
+  if (created <= threshold(2))
+    return "2年前の投稿です。古い情報の可能性があります";
+  if (created <= threshold(1))
+    return "1年前の投稿です。古い情報の可能性があります";
+  if (created <= threshold(0, 6))
+    return "半年前の投稿です。古い情報の可能性があります";
   return "";
 };
 

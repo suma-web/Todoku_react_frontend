@@ -29,7 +29,7 @@ type CreateSchoolPostInput = Pick<
   "type" | "title" | "content" | "priority" | "expires_at" | "group_ids"
 >;
 
-const read = async <T,>(request: Response | Promise<Response>): Promise<T> => {
+const read = async <T>(request: Response | Promise<Response>): Promise<T> => {
   const response = await request;
   const body = await response.json().catch(() => null);
   if (!response.ok) {
@@ -53,17 +53,27 @@ export const getTimeline = () =>
     fetch(`${API_BASE_URL}/api/timeline`, { credentials: "include" }),
   );
 export const getMySchoolPosts = () =>
-  read<SchoolPost[]>(fetch(`${API_BASE_URL}/api/me/school-posts`, { credentials: "include" }));
+  read<SchoolPost[]>(
+    fetch(`${API_BASE_URL}/api/me/school-posts`, { credentials: "include" }),
+  );
 export const getSchoolPost = (id: number) =>
-  read<SchoolPost>(fetch(`${API_BASE_URL}/api/school-posts/${id}`, { credentials: "include" }));
+  read<SchoolPost>(
+    fetch(`${API_BASE_URL}/api/school-posts/${id}`, { credentials: "include" }),
+  );
 export const getSchoolPostStatus = (id: number) =>
-  read<SchoolPostStatus>(fetch(`${API_BASE_URL}/api/school-posts/${id}/status`, { credentials: "include" }));
+  read<SchoolPostStatus>(
+    fetch(`${API_BASE_URL}/api/school-posts/${id}/status`, {
+      credentials: "include",
+    }),
+  );
 
 export const markSchoolPostRead = (id: number) =>
-  read<{ message: string }>(fetch(`${API_BASE_URL}/api/school-posts/${id}/read`, {
-    method: "POST",
-    credentials: "include",
-  }));
+  read<{ message: string }>(
+    fetch(`${API_BASE_URL}/api/school-posts/${id}/read`, {
+      method: "POST",
+      credentials: "include",
+    }),
+  );
 
 export const deleteSchoolPost = async (id: number) => {
   const response = await fetch(`${API_BASE_URL}/api/school-posts/${id}`, {

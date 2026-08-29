@@ -1,1 +1,21 @@
-import{API_BASE_URL}from"./base";export type SearchResult={type:"post"|"question"|"contact";id:number;title:string;excerpt:string;category?:string;department?:string;created_at:string;expires_at?:string};export const searchSchool=async(q:string)=>{const response=await fetch(`${API_BASE_URL}/api/search?q=${encodeURIComponent(q)}`,{credentials:"include"});const body=await response.json().catch(()=>null);if(!response.ok)throw new Error(body?.error?.message??"検索できませんでした");return body as{query:string;results:SearchResult[]}};
+import { API_BASE_URL } from "./base";
+export type SearchResult = {
+  type: "post" | "question" | "contact";
+  id: number;
+  title: string;
+  excerpt: string;
+  category?: string;
+  department?: string;
+  created_at: string;
+  expires_at?: string;
+};
+export const searchSchool = async (q: string) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/search?q=${encodeURIComponent(q)}`,
+    { credentials: "include" },
+  );
+  const body = await response.json().catch(() => null);
+  if (!response.ok)
+    throw new Error(body?.error?.message ?? "検索できませんでした");
+  return body as { query: string; results: SearchResult[] };
+};
