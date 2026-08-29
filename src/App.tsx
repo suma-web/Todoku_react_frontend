@@ -10,7 +10,6 @@ import { PostDetail } from "./pages/app/PostDetail";
 import { SelfProfile } from "./pages/app/Profile";
 import { ProtectedRoute } from "./pages/auth/ProtectedRoute";
 import { Notifications } from "./pages/app/Notifications";
-import { Messages, MessageGroupDetail } from "./pages/app/Messages";
 import { Bookmarks } from "./pages/app/Bookmarks";
 import { RoleRoute } from "./pages/auth/RoleRoute";
 import { GroupsPage } from "./pages/admin/GroupsPage";
@@ -45,8 +44,6 @@ function App() {
             <Route path="/post/:id/detail" element={<PostDetail />} />
             <Route path="/user/:name" element={<SelfProfile />} />
             <Route path="/notifications" element={<Notifications />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/messages/:groupId" element={<MessageGroupDetail />} />
             <Route path="/bookmarks" element={<Bookmarks />} />
             <Route element={<SchoolLayout />}>
               <Route index element={<RoleHomePage />} />
