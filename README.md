@@ -29,7 +29,7 @@ Twitterクローンとして実装した認証、投稿、コメント、通知�
 - Roleに応じたホーム・ナビゲーション（全Role共通ヘッダーからログアウト可能）
 - 所属別に配信された学校連絡のタイムライン
 - 連絡詳細、既読、確認
-- 教員向けの閲覧・確認状況表示
+- 連絡作成者・管理者向けの閲覧・確認集計と、確認済み・閲覧のみ・未読ユーザー表示
 - 公開質問、個別相談、回答、解決
 - 学校内横断検索
 - 管理者によるアカウント追加（ユーザー名、メールアドレス、初期パスワード、Role）
@@ -88,7 +88,7 @@ APIの接続先は`http://localhost:8080`です。
 | `/timeline` | 全Role | 学校からの連絡 |
 | `/school-posts/:id` | 全Role | 連絡詳細・確認 |
 | `/school-posts/new` | teacher / admin | 学校連絡の作成 |
-| `/teacher/school-posts/:id/status` | teacher / admin | 閲覧・確認状況 |
+| `/teacher/school-posts/:id/status` | 連絡作成者 / admin | 閲覧・確認状況とユーザー別状態 |
 | `/questions` | 全Role | 質問・相談一覧 |
 | `/questions/new` | 全Role | 公開質問・個別相談の作成 |
 | `/questions/:id` | 全Role | 質問詳細（teacher / adminは回答、生徒は自分の質問を解決済みに変更可能） |
