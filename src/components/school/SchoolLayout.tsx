@@ -71,7 +71,10 @@ export const SchoolLayout = () => {
           </button>
         </nav>
         {logoutError && (
-          <p role="alert" className="mx-auto max-w-5xl px-4 pb-2 text-right text-sm text-red-600">
+          <p
+            role="alert"
+            className="mx-auto max-w-5xl px-4 pb-2 text-right text-sm text-red-600"
+          >
             {logoutError}
           </p>
         )}
