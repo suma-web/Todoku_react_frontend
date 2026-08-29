@@ -16,7 +16,10 @@ export const SchoolLayout = () => {
   ];
 
   if (user?.role === "teacher" || user?.role === "admin") {
-    links.push({ to: "/school-posts/new", label: "連絡作成" });
+    links.push(
+      { to: "/school-posts/new", label: "連絡作成" },
+      { to: "/teacher/school-posts", label: "作成した連絡" },
+    );
   }
   if (user?.role === "admin") {
     links.push(
