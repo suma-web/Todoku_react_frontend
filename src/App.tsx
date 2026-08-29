@@ -1,13 +1,7 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "./pages/auth/login/LoginPage";
-import { Home } from "./pages/app/Home";
-import { PostCreate } from "./pages/app/PostCreate";
-import { PostDetail } from "./pages/app/PostDetail";
-import { SelfProfile } from "./pages/app/Profile";
 import { ProtectedRoute } from "./pages/auth/ProtectedRoute";
-import { Notifications } from "./pages/app/Notifications";
-import { Bookmarks } from "./pages/app/Bookmarks";
 import { RoleRoute } from "./pages/auth/RoleRoute";
 import { GroupsPage } from "./pages/admin/GroupsPage";
 import { SchoolPostCreatePage } from "./pages/school/SchoolPostCreatePage";
@@ -31,12 +25,6 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
 
           <Route element={<ProtectedRoute />}>
-            <Route path="/home" element={<Home />} />
-            <Route path="/post/create" element={<PostCreate />} />
-            <Route path="/post/:id/detail" element={<PostDetail />} />
-            <Route path="/user/:name" element={<SelfProfile />} />
-            <Route path="/notifications" element={<Notifications />} />
-            <Route path="/bookmarks" element={<Bookmarks />} />
             <Route element={<SchoolLayout />}>
               <Route index element={<RoleHomePage />} />
               <Route path="/timeline" element={<TimelinePage />} />

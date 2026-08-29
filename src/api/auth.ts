@@ -24,9 +24,9 @@ export const login = async (data: loginData) => {
     body: JSON.stringify(data),
   });
 
-  const body = (await response.json().catch(() => null)) as
-    | ErrorResponse
-    | null;
+  const body = (await response
+    .json()
+    .catch(() => null)) as ErrorResponse | null;
 
   if (!response.ok) {
     throw new ApiError(
