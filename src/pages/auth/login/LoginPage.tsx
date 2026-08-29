@@ -8,7 +8,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const { refresh } = useAuth();
   const [loginData, setLoginData] = useState({
-    name: "",
+    email: "",
     password: "",
   });
 
@@ -19,7 +19,7 @@ export const LoginPage = () => {
   const sleep = (msec: number) => new Promise((resolve) => setTimeout(resolve, msec));
 
   const canSubmit =
-    loginData.name.trim() !== "" && loginData.password.trim() !== "";
+    loginData.email.trim() !== "" && loginData.password.trim() !== "";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,14 +33,14 @@ export const LoginPage = () => {
       await refresh();
 
       setLoginData({
-        name: "",
+        email: "",
         password: "",
       });
 
       navigate("/");
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
-        setErrorMessage("ユーザー名またはパスワードが違います");
+        setErrorMessage("メールアドレスまたはパスワードが違います");
       } else if (error instanceof ApiError) {
         setErrorMessage(error.message);
       } else {
@@ -72,16 +72,17 @@ export const LoginPage = () => {
 
           <div className="space-y-5">
             <label className="block">
-              <span className="sr-only">ユーザー名</span>
+              <span className="sr-only">メールアドレス</span>
 
               <input
-                type="text"
-                placeholder="ユーザー名"
-                value={loginData.name}
+                type="email"
+                autoComplete="email"
+                placeholder="メールアドレス"
+                value={loginData.email}
                 onChange={(e) =>
                   setLoginData({
                     ...loginData,
-                    name: e.target.value,
+                    email: e.target.value,
                   })
                 }
                 className="h-16 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-4 focus:ring-sky-100"

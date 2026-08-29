@@ -13,6 +13,16 @@ export type SchoolPost = {
   group_ids: number[];
 };
 
+export type SchoolPostStatus = {
+  target_count: number;
+  read_count: number;
+  confirmed_count: number;
+  unconfirmed_count: number;
+  confirmed_users: Array<{ id: number; name: string }>;
+  read_only_users: Array<{ id: number; name: string }>;
+  unread_users: Array<{ id: number; name: string }>;
+};
+
 type CreateSchoolPostInput = Pick<
   SchoolPost,
   "type" | "title" | "content" | "priority" | "expires_at" | "group_ids"
@@ -42,7 +52,7 @@ export const getTimeline = () =>
     fetch(`${API_BASE_URL}/api/timeline`, { credentials: "include" }),
   );
 export const getSchoolPost=(id:number)=>read<SchoolPost>(fetch(`${API_BASE_URL}/api/school-posts/${id}`,{credentials:"include"}));
-export const getSchoolPostStatus=(id:number)=>read<{target_count:number;read_count:number;confirmed_count:number;unconfirmed_count:number}>(fetch(`${API_BASE_URL}/api/school-posts/${id}/status`,{credentials:"include"}));
+export const getSchoolPostStatus=(id:number)=>read<SchoolPostStatus>(fetch(`${API_BASE_URL}/api/school-posts/${id}/status`,{credentials:"include"}));
 export const getUnconfirmedUsers=(id:number)=>read<Array<{id:number;name:string}>>(fetch(`${API_BASE_URL}/api/school-posts/${id}/unconfirmed`,{credentials:"include"}));
 
 export const markSchoolPostRead = (id: number) =>
