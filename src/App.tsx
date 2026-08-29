@@ -1,7 +1,6 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "./pages/auth/login/LoginPage";
-import { RegisterProvider } from "./contexts/RegisterContext";
 import { Home } from "./pages/app/Home";
 import { PostCreate } from "./pages/app/PostCreate";
 import { PostDetail } from "./pages/app/PostDetail";
@@ -27,8 +26,7 @@ import { PostStatusPage } from "./pages/school/PostStatusPage";
 function App() {
   return (
     <BrowserRouter>
-      <RegisterProvider>
-        <Routes>
+      <Routes>
           <Route path="/login" element={<LoginPage />} />
 
           <Route element={<ProtectedRoute />}>
@@ -63,8 +61,7 @@ function App() {
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </RegisterProvider>
+      </Routes>
     </BrowserRouter>
   );
 }
