@@ -59,7 +59,6 @@ export const ProfilePostCard = ({ post, canDelete, onOpen, onRequestDelete }: Pr
         </div>
         {post.doc && <p className="mt-2 whitespace-pre-wrap wrap-break-word">{post.doc}</p>}
         {post.image_url && <img src={resolveImageURL(post.image_url)} alt="投稿画像" className="mt-3 max-h-[500px] w-full rounded-2xl border border-slate-800 object-contain" />}
-        <div className="mt-3 flex max-w-sm justify-between text-slate-500"><span>♡</span><span>↻</span><span>♡</span><span>↗</span></div>
       </div>
     </article>
   );

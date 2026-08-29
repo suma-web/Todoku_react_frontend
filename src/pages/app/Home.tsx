@@ -10,12 +10,8 @@ import { API_BASE_URL } from "../../api/base";
 import {
   bookmarkPost,
   getPosts,
-  likePost,
   resolveImageURL,
-  retweetPost,
-  undoLike,
   undoBookmark,
-  undoRetweet,
   type Post,
 } from "../../api/posts";
 import { CommentModal } from "../../components/comments/CommentModal";
@@ -32,10 +28,6 @@ export const Home = () => {
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMorePosts, setHasMorePosts] = useState(false);
-  const [retweetingPostIDs, setRetweetingPostIDs] = useState<Set<number>>(
-    new Set(),
-  );
-  const [likingPostIDs, setLikingPostIDs] = useState<Set<number>>(new Set());
   const [bookmarkingPostIDs, setBookmarkingPostIDs] = useState<Set<number>>(
     new Set(),
   );
@@ -213,70 +205,6 @@ export const Home = () => {
     }
   };
 
-  const handleRetweet = async (post: Post) => {
-    if (retweetingPostIDs.has(post.id)) return;
-    setRetweetingPostIDs((current) => new Set(current).add(post.id));
-    setPostsError("");
-    try {
-      const result = post.retweeted_by_me
-        ? await undoRetweet(post.id)
-        : await retweetPost(post.id);
-      setPosts((current) =>
-        current.map((item) =>
-          item.id === post.id
-            ? {
-                ...item,
-                retweet_count: result.retweet_count,
-                retweeted_by_me: result.retweeted_by_me,
-              }
-            : item,
-        ),
-      );
-    } catch (error) {
-      setPostsError(
-        error instanceof Error ? error.message : "リツイートできませんでした",
-      );
-    } finally {
-      setRetweetingPostIDs((current) => {
-        const next = new Set(current);
-        next.delete(post.id);
-        return next;
-      });
-    }
-  };
-
-  const handleLike = async (post: Post) => {
-    if (likingPostIDs.has(post.id)) return;
-    setLikingPostIDs((current) => new Set(current).add(post.id));
-    setPostsError("");
-    try {
-      const result = post.liked_by_me
-        ? await undoLike(post.id)
-        : await likePost(post.id);
-      setPosts((current) =>
-        current.map((item) =>
-          item.id === post.id
-            ? {
-                ...item,
-                like_count: result.like_count,
-                liked_by_me: result.liked_by_me,
-              }
-            : item,
-        ),
-      );
-    } catch (error) {
-      setPostsError(
-        error instanceof Error ? error.message : "いいねできませんでした",
-      );
-    } finally {
-      setLikingPostIDs((current) => {
-        const next = new Set(current);
-        next.delete(post.id);
-        return next;
-      });
-    }
-  };
-
   const handleBookmark = async (post: Post) => {
     if (bookmarkingPostIDs.has(post.id)) return;
     setBookmarkingPostIDs((current) => new Set(current).add(post.id));
@@ -406,25 +334,6 @@ export const Home = () => {
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"
-          />
-        </svg>
-      ),
-      label: "メッセージ",
-    },
-    {
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="size-6"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
             d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
           />
         </svg>
@@ -508,9 +417,6 @@ export const Home = () => {
                   }
                   if (item.label === "通知") {
                     navigate("/notifications");
-                  }
-                  if (item.label === "メッセージ") {
-                    navigate("/messages");
                   }
                   if (item.label === "ブックマーク") {
                     navigate("/bookmarks");
@@ -872,72 +778,6 @@ export const Home = () => {
                           d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"
                         />
                       </svg>
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={
-                        post.retweeted_by_me
-                          ? `${post.name}の投稿のリツイートを解除`
-                          : `${post.name}の投稿をリツイート`
-                      }
-                      disabled={retweetingPostIDs.has(post.id)}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        void handleRetweet(post);
-                      }}
-                      onKeyDown={(event) => event.stopPropagation()}
-                      className={`flex items-center gap-1 rounded-full p-1 hover:bg-green-500/10 hover:text-green-500 disabled:cursor-default ${
-                        post.retweeted_by_me ? "text-green-500" : ""
-                      }`}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="size-5"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-                        />
-                      </svg>
-                      <span className="text-xs">{post.retweet_count}</span>
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={
-                        post.liked_by_me
-                          ? `${post.name}の投稿のいいねを解除`
-                          : `${post.name}の投稿にいいね`
-                      }
-                      disabled={likingPostIDs.has(post.id)}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        void handleLike(post);
-                      }}
-                      onKeyDown={(event) => event.stopPropagation()}
-                      className={`flex items-center gap-1 rounded-full p-1 hover:bg-pink-500/10 hover:text-pink-500 disabled:cursor-default ${
-                        post.liked_by_me ? "text-pink-500" : ""
-                      }`}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill={post.liked_by_me ? "currentColor" : "none"}
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="size-5"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-                        />
-                      </svg>
-                      <span className="text-xs">{post.like_count}</span>
                     </button>
                     <button
                       type="button"
