@@ -1,8 +1,13 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { logout } from "../../api/user";
 import { useAuth } from "../../contexts/auth";
 
 export const SchoolLayout = () => {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, refresh } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const links = [
     { to: "/", label: "ホーム" },
     { to: "/timeline", label: "連絡" },
@@ -21,6 +26,22 @@ export const SchoolLayout = () => {
     );
   }
 
+  const handleLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    setLogoutError("");
+    try {
+      await logout();
+      await refresh();
+      navigate("/login", { replace: true });
+    } catch (reason) {
+      setLogoutError(
+        reason instanceof Error ? reason.message : "ログアウトできませんでした",
+      );
+      setLoggingOut(false);
+    }
+  };
+
   return (
     <div className="min-h-dvh bg-[#F4F8FC] text-[#16324F]">
       <header className="sticky top-0 z-20 border-b border-sky-100 bg-white/95 shadow-sm backdrop-blur">
@@ -37,7 +58,20 @@ export const SchoolLayout = () => {
               {link.label}
             </NavLink>
           ))}
+          <button
+            type="button"
+            disabled={loggingOut}
+            onClick={() => void handleLogout()}
+            className="ml-auto whitespace-nowrap rounded-full border border-slate-300 px-4 py-2 font-medium text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {loggingOut ? "ログアウト中..." : "ログアウト"}
+          </button>
         </nav>
+        {logoutError && (
+          <p role="alert" className="mx-auto max-w-5xl px-4 pb-2 text-right text-sm text-red-600">
+            {logoutError}
+          </p>
+        )}
       </header>
       <Outlet />
     </div>
