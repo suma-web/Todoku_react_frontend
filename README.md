@@ -123,6 +123,18 @@ docker compose exec -T app npm run lint
 docker compose exec -T app npm run build
 ```
 
+## デモデータ
+
+バックエンドには、Role・所属・学校連絡・既読状態・質問・回答・検索結果をまとめて作成する開発用seedがあります。通常起動では追加されません。
+
+```bash
+cd ../twitter_golang_backend
+docker compose up -d postgres
+docker compose run --rm -e DEMO_SEED=true backend go run ./cmd/seed
+```
+
+seed実行時に、デモ用のメールアドレスと初期パスワードが表示されます。詳細なアカウント一覧と操作シナリオはバックエンドの`docs/DEMO.md`を参照してください。
+
 ## 主なディレクトリ構成
 
 ```text
