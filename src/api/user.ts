@@ -11,11 +11,6 @@ export type CurrentUser = {
   is_active: boolean;
 };
 
-export type ProfileInput = Pick<
-  CurrentUser,
-  "name" | "bio" | "location" | "website"
->;
-
 const readUserResponse = async (response: Response, fallback: string) => {
   const body = (await response.json().catch(() => null)) as
     | CurrentUser
@@ -36,44 +31,14 @@ export const getCurrentUser = async (): Promise<CurrentUser> => {
   return readUserResponse(response, "ユーザー情報を取得できませんでした");
 };
 
-export const getUserProfile = async (name: string): Promise<CurrentUser> => {
-  const response = await fetch(
-    `${API_BASE_URL}/api/users/${encodeURIComponent(name)}`,
-    { credentials: "include" },
-  );
-  return readUserResponse(response, "プロフィールを取得できませんでした");
-};
-
-export const updateProfile = async (
-  input: ProfileInput,
-): Promise<CurrentUser> => {
-  const response = await fetch(`${API_BASE_URL}/api/me`, {
-    method: "PATCH",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  return readUserResponse(response, "プロフィールを更新できませんでした");
-};
-
-const performAccountAction = async (
-  path: string,
-  method: "POST" | "DELETE",
-  fallback: string,
-): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
+export const logout = async (): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/api/logout`, {
+    method: "POST",
     credentials: "include",
   });
   if (response.ok) return;
   const body = (await response.json().catch(() => null)) as {
     error?: { message?: string };
   } | null;
-  throw new Error(body?.error?.message ?? fallback);
+  throw new Error(body?.error?.message ?? "ログアウトできませんでした");
 };
-
-export const logout = () =>
-  performAccountAction("/api/logout", "POST", "ログアウトできませんでした");
-
-export const deleteAccount = () =>
-  performAccountAction("/api/me", "DELETE", "退会できませんでした");
