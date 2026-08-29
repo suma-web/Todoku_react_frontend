@@ -123,12 +123,6 @@ export const LoginPage = () => {
           <p className="text-sm pl-4 pr-4 pt-3 justify-center items-center text-gray-600/75 dark:text-gray-400/75 ">
             続行することで、利用規約、プライバシーポリシーおよびCookieの使用に同意したものとみなされます。
           </p>
-          <button
-            className="text-sm text-gray-600/75 dark:text-gray-400/75 pl-4 pr-4 pt-3 justify-end"
-            onClick={() => navigate("/register/email_name_birthday")}
-          >
-            アカウントを作成する
-          </button>
         </form>
       </main>
     </div>
