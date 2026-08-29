@@ -25,14 +25,15 @@ Twitterクローンとして実装した認証、投稿、コメント、通知�
 
 ## 主な機能
 
-- ログイン・新規登録
-- Roleに応じたホーム・ナビゲーション
+- ログイン・ログアウト
+- Roleに応じたホーム・ナビゲーション（全Role共通ヘッダーからログアウト可能）
 - 所属別に配信された学校連絡のタイムライン
 - 連絡詳細、既読、確認
 - 教員向けの閲覧・確認状況表示
 - 公開質問、個別相談、回答、解決
 - 学校内横断検索
-- 管理者向けユーザー、Role、有効状態、所属、質問カテゴリ管理
+- 管理者によるアカウント追加（ユーザー名、メールアドレス、初期パスワード、Role）
+- 管理者向けユーザーRole・有効状態、所属、質問カテゴリ管理
 - 投稿、プロフィール、コメント、コメント通知、ブックマーク
 
 ## Role
@@ -41,14 +42,14 @@ Twitterクローンとして実装した認証、投稿、コメント、通知�
 | --- | --- |
 | `student` | 連絡の閲覧・確認、質問・相談、検索 |
 | `teacher` | 生徒の機能に加え、連絡作成、確認状況の閲覧、質問への回答 |
-| `admin` | 教員の機能に加え、ユーザー、所属、質問カテゴリの管理 |
+| `admin` | 教員の機能に加え、アカウント発行、ユーザー、所属、質問カテゴリの管理 |
 
 ## 使用技術
 
-- React 19
-- TypeScript
-- Vite
-- React Router
+- React 19.2
+- TypeScript 6.0
+- Vite 8.1
+- React Router 7.18
 - Tailwind CSS 4
 - Docker / Docker Compose
 
@@ -90,12 +91,19 @@ APIの接続先は`http://localhost:8080`です。
 | `/teacher/school-posts/:id/status` | teacher / admin | 閲覧・確認状況 |
 | `/questions` | 全Role | 質問・相談一覧 |
 | `/questions/new` | 全Role | 公開質問・個別相談の作成 |
-| `/questions/:id` | 全Role | 質問詳細・回答 |
+| `/questions/:id` | 全Role | 質問詳細（teacher / adminは回答、生徒は自分の質問を解決済みに変更可能） |
 | `/search` | 全Role | 学校内横断検索 |
-| `/admin/users` | admin | ユーザー管理 |
+| `/admin/users` | admin | アカウント追加、Role・有効状態の管理 |
 | `/admin/groups` | admin | 所属管理 |
 | `/admin/question-categories` | admin | 質問カテゴリ管理 |
 | `/home` | 全Role | 投稿・コメント・ブックマーク画面 |
+| `/post/create` | 全Role | 投稿作成 |
+| `/post/:id/detail` | 全Role | 投稿詳細・コメント |
+| `/user/:name` | 全Role | プロフィール |
+| `/notifications` | 全Role | コメント通知 |
+| `/bookmarks` | 全Role | ブックマーク一覧 |
+
+現在、利用者向けの公開新規登録画面はありません。アカウントは管理者が`/admin/users`から発行します。
 
 ## デザイン
 
@@ -123,10 +131,10 @@ src/
 ├── assets/               # 画像
 ├── components/
 │   └── school/           # 学校機能の共通レイアウト
-├── contexts/             # 認証・登録状態
+├── contexts/             # 認証状態
 ├── pages/
 │   ├── admin/            # 管理者画面
-│   ├── auth/             # ログイン・新規登録
+│   ├── auth/             # ログイン・Role別ルート保護
 │   ├── school/           # 連絡・質問・検索・ホーム
 │   └── app/              # 投稿・プロフィール・通知画面
 ├── types/                # TypeScriptの型定義
