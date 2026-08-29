@@ -1,6 +1,5 @@
 import type { ErrorResponse } from "../types/apierror";
 import type { loginData } from "../types/login";
-import type { RegisterData } from "../types/register";
 import { API_BASE_URL } from "./base";
 
 export class ApiError extends Error {
@@ -14,30 +13,6 @@ export class ApiError extends Error {
     this.code = code;
   }
 }
-
-export const signup = async (data: RegisterData) => {
-  const response = await fetch(`${API_BASE_URL}/api/signup`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  const body = (await response.json().catch(() => null)) as
-    | ErrorResponse
-    | null;
-
-  if (!response.ok) {
-    throw new ApiError(
-      response.status,
-      body?.error?.message ?? "登録に失敗しました",
-      body?.error?.code,
-    );
-  }
-
-  return body;
-};
 
 export const login = async (data: loginData) => {
   const response = await fetch(`${API_BASE_URL}/api/login`, {
