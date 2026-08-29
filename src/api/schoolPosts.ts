@@ -11,15 +11,16 @@ export type SchoolPost = {
   expires_at: string | null;
   created_at: string;
   group_ids: number[];
+  targeted_by_me: boolean;
+  read_by_me: boolean;
+  read_users?: Array<{ id: number; name: string }>;
 };
 
 export type SchoolPostStatus = {
   target_count: number;
   read_count: number;
-  confirmed_count: number;
-  unconfirmed_count: number;
-  confirmed_users: Array<{ id: number; name: string }>;
-  read_only_users: Array<{ id: number; name: string }>;
+  unread_count: number;
+  read_users: Array<{ id: number; name: string }>;
   unread_users: Array<{ id: number; name: string }>;
 };
 
@@ -51,20 +52,15 @@ export const getTimeline = () =>
   read<SchoolPost[]>(
     fetch(`${API_BASE_URL}/api/timeline`, { credentials: "include" }),
   );
-export const getSchoolPost=(id:number)=>read<SchoolPost>(fetch(`${API_BASE_URL}/api/school-posts/${id}`,{credentials:"include"}));
-export const getSchoolPostStatus=(id:number)=>read<SchoolPostStatus>(fetch(`${API_BASE_URL}/api/school-posts/${id}/status`,{credentials:"include"}));
-export const getUnconfirmedUsers=(id:number)=>read<Array<{id:number;name:string}>>(fetch(`${API_BASE_URL}/api/school-posts/${id}/unconfirmed`,{credentials:"include"}));
+export const getMySchoolPosts = () =>
+  read<SchoolPost[]>(fetch(`${API_BASE_URL}/api/me/school-posts`, { credentials: "include" }));
+export const getSchoolPost = (id: number) =>
+  read<SchoolPost>(fetch(`${API_BASE_URL}/api/school-posts/${id}`, { credentials: "include" }));
+export const getSchoolPostStatus = (id: number) =>
+  read<SchoolPostStatus>(fetch(`${API_BASE_URL}/api/school-posts/${id}/status`, { credentials: "include" }));
 
 export const markSchoolPostRead = (id: number) =>
-  fetch(`${API_BASE_URL}/api/school-posts/${id}/read`, {
+  read<{ message: string }>(fetch(`${API_BASE_URL}/api/school-posts/${id}/read`, {
     method: "POST",
     credentials: "include",
-  });
-
-export const confirmSchoolPost = async (id: number) => {
-  const response = await fetch(`${API_BASE_URL}/api/school-posts/${id}/confirm`, {
-    method: "POST",
-    credentials: "include",
-  });
-  if (!response.ok) throw new Error("確認状態を保存できませんでした");
-};
+  }));
