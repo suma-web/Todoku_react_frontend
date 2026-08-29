@@ -9,14 +9,8 @@ const PAGE_SIZE = 20;
 
 const notificationMessage = (notification: Notification) => {
   switch (notification.kind) {
-    case "like":
-      return "あなたのポストをいいねしました";
-    case "follow":
-      return "あなたをフォローしました";
     case "comment":
       return "あなたのポストにコメントしました";
-    case "retweet":
-      return "あなたのポストをリツイートしました";
   }
 };
 

@@ -2,7 +2,7 @@ import { API_BASE_URL } from "./base";
 
 export type Notification = {
   id: number;
-  kind: "like" | "follow" | "comment" | "retweet";
+  kind: "comment";
   actor_user_id: number;
   actor_name: string;
   post_id: number | null;
