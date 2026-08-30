@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { createQuestion, getQuestionCategories, type QuestionCategory } from "../../api/questions";
 
 export const QuestionCreatePage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedCategoryId = searchParams.get("category_id");
   const [categories, setCategories] = useState<QuestionCategory[]>([]);
   const [category, setCategory] = useState(0);
   const [title, setTitle] = useState("");
@@ -16,11 +18,15 @@ export const QuestionCreatePage = () => {
     void getQuestionCategories().then((items) => {
       if (!active) return;
       const enabled = items.filter((item) => item.is_active);
+      const requestedCategory = Number(requestedCategoryId);
+      const initialCategory = enabled.some((item) => item.id === requestedCategory)
+        ? requestedCategory
+        : (enabled[0]?.id ?? 0);
       setCategories(enabled);
-      setCategory(enabled[0]?.id ?? 0);
+      setCategory(initialCategory);
     }).catch((reason) => setError(reason.message));
     return () => { active = false; };
-  }, []);
+  }, [requestedCategoryId]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
