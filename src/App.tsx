@@ -17,6 +17,7 @@ import { UsersPage } from "./pages/admin/UsersPage";
 import { SchoolPostDetailPage } from "./pages/school/SchoolPostDetailPage";
 import { PostStatusPage } from "./pages/school/PostStatusPage";
 import { AuthoredSchoolPostsPage } from "./pages/school/AuthoredSchoolPostsPage";
+import { SchoolPostEditPage } from "./pages/school/SchoolPostEditPage";
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
           <Route element={<RoleRoute roles={["teacher", "admin"]} />}>
             <Route element={<SchoolLayout />}>
               <Route path="/school-posts/new" element={<SchoolPostCreatePage />} />
+              <Route path="/school-posts/:id/edit" element={<SchoolPostEditPage />} />
               <Route path="/teacher/school-posts" element={<AuthoredSchoolPostsPage />} />
               <Route path="/teacher/school-posts/:id/status" element={<PostStatusPage />} />
             </Route>

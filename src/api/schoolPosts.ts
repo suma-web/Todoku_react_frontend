@@ -10,6 +10,7 @@ export type SchoolPost = {
   priority: "normal" | "important" | "urgent";
   expires_at: string | null;
   created_at: string;
+  updated_at: string;
   group_ids: number[];
   targeted_by_me: boolean;
   read_by_me: boolean;
@@ -24,7 +25,7 @@ export type SchoolPostStatus = {
   unread_users: Array<{ id: number; name: string }>;
 };
 
-type CreateSchoolPostInput = Pick<
+export type SchoolPostInput = Pick<
   SchoolPost,
   "type" | "title" | "content" | "priority" | "expires_at" | "group_ids"
 >;
@@ -38,10 +39,20 @@ const read = async <T>(request: Response | Promise<Response>): Promise<T> => {
   return body as T;
 };
 
-export const createSchoolPost = (input: CreateSchoolPostInput) =>
+export const createSchoolPost = (input: SchoolPostInput) =>
   read<SchoolPost>(
     fetch(`${API_BASE_URL}/api/school-posts`, {
       method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    }),
+  );
+
+export const updateSchoolPost = (id: number, input: SchoolPostInput) =>
+  read<SchoolPost>(
+    fetch(`${API_BASE_URL}/api/school-posts/${id}`, {
+      method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
@@ -67,13 +78,16 @@ export const getSchoolPostStatus = (id: number) =>
     }),
   );
 
-export const markSchoolPostRead = (id: number) =>
-  read<{ message: string }>(
-    fetch(`${API_BASE_URL}/api/school-posts/${id}/read`, {
-      method: "POST",
-      credentials: "include",
-    }),
-  );
+export const markSchoolPostRead = async (id: number): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/api/school-posts/${id}/read`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error?.message ?? "既読状態を保存できませんでした");
+  }
+};
 
 export const deleteSchoolPost = async (id: number) => {
   const response = await fetch(`${API_BASE_URL}/api/school-posts/${id}`, {
