@@ -3,9 +3,7 @@ import { API_BASE_URL } from "./base";
 export type CurrentUser = {
   id: number;
   name: string;
-  bio: string;
-  location: string;
-  website: string;
+  email: string;
   created_at: string;
   role: "student" | "teacher" | "admin";
   is_active: boolean;
