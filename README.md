@@ -79,7 +79,11 @@ docker compose up --build
 http://localhost:5173/login
 ```
 
-APIの接続先は`http://localhost:8080`です。
+APIの接続先は環境変数`VITE_API_BASE_URL`で指定します。未指定時は開発用の`http://localhost:8080`を使用します。
+
+```bash
+cp .env.example .env
+```
 
 ## 主な画面とルート
 
