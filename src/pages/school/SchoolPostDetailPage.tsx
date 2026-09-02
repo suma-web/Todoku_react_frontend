@@ -64,6 +64,7 @@ export const SchoolPostDetailPage = () => {
     <div className="mt-6 flex flex-wrap gap-3">
       {canMarkRead && <button disabled={post.read_by_me || saving} onClick={() => void markRead()} className="rounded bg-sky-600 px-5 py-2 text-white disabled:bg-emerald-700">{post.read_by_me ? "✓ 既読済み" : saving ? "保存中..." : "既読にする"}</button>}
       {canViewStatus && <Link to={`/teacher/school-posts/${post.id}/status`} className="rounded border border-sky-300 bg-white px-5 py-2 font-bold text-sky-700">既読状況を見る</Link>}
+      {canViewStatus && <Link to={`/school-posts/${post.id}/edit`} className="rounded border border-sky-300 bg-white px-5 py-2 font-bold text-sky-700">編集</Link>}
       {canViewStatus && <button type="button" disabled={saving} onClick={() => void remove()} className="rounded border border-red-300 bg-white px-5 py-2 font-bold text-red-700 disabled:opacity-50">削除</button>}
     </div>
   </article></main>;
