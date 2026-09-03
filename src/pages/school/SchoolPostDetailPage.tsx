@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { deleteSchoolPost, getSchoolPost, markSchoolPostRead, type SchoolPost } from "../../api/schoolPosts";
 import { useAuth } from "../../contexts/auth";
 import { isExpiredSchoolPost, schoolPostAgeWarning } from "../../utils/schoolPostAge";
+import { AttachmentList } from "../../components/school/AttachmentList";
 
 export const SchoolPostDetailPage = () => {
   const { id } = useParams();
@@ -58,6 +59,7 @@ export const SchoolPostDetailPage = () => {
     <h1 className="mt-2 text-3xl font-bold">{post.title}</h1>
     <p className="mt-5 whitespace-pre-wrap">{post.content}</p>
     <p className="mt-4 text-sm text-slate-500">投稿者：{post.author_name}</p>
+    <AttachmentList parent="school-posts" id={post.id} />
     {expired && <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm font-bold text-red-700">有効期限切れ（通常ユーザーには表示されません）</p>}
     {warning && <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">{warning}</p>}
     {error && <p role="alert" className="mt-4 text-sm text-red-600">{error}</p>}

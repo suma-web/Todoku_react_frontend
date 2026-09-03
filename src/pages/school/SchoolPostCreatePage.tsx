@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getSchoolGroups, type SchoolGroup } from "../../api/schoolGroups";
 import { createSchoolPost } from "../../api/schoolPosts";
+import { uploadAttachments } from "../../api/attachments";
+import { AttachmentPicker } from "../../components/school/AttachmentPicker";
+import { attachmentsAreValid } from "../../utils/attachmentValidation";
 
 export const SchoolPostCreatePage = () => {
   const navigate = useNavigate();
@@ -14,6 +17,7 @@ export const SchoolPostCreatePage = () => {
   const [expiresAt, setExpiresAt] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
   const dateTimeLimit = (years: number) => {
     const value = new Date();
     value.setFullYear(value.getFullYear() + years);
@@ -27,10 +31,11 @@ export const SchoolPostCreatePage = () => {
     event.preventDefault(); setSubmitting(true); setError("");
     try {
       const post = await createSchoolPost({ title, content, type, priority, expires_at: expiresAt ? new Date(expiresAt).toISOString() : null, group_ids: groupIDs });
+      await uploadAttachments("school-posts", post.id, files);
       navigate(`/school-posts/${post.id}`);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "投稿できませんでした"); }
     finally { setSubmitting(false); }
   };
 
-  return <main className="min-h-dvh bg-transparent p-6 text-slate-900"><form onSubmit={submit} className="mx-auto max-w-2xl space-y-5"><h1 className="text-2xl font-bold">学校連絡を作成</h1>{error && <p role="alert" className="text-red-600">{error}</p>}<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="タイトル" maxLength={200} className="w-full rounded bg-white border border-slate-300 text-slate-900 p-3"/><textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="本文" rows={8} className="w-full rounded bg-white border border-slate-300 text-slate-900 p-3"/><div className="grid grid-cols-2 gap-3"><select value={type} onChange={(e) => setType(e.target.value as typeof type)} className="rounded bg-white border border-slate-300 text-slate-900 p-3"><option value="notice">お知らせ</option><option value="emergency">緊急連絡</option></select><select value={priority} onChange={(e) => setPriority(e.target.value as typeof priority)} className="rounded bg-white border border-slate-300 text-slate-900 p-3"><option value="normal">通常</option><option value="important">重要</option><option value="urgent">緊急</option></select></div><label className="block">有効期限<input type="datetime-local" min={dateTimeLimit(0)} max={dateTimeLimit(2)} value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className="ml-3 rounded bg-white border border-slate-300 text-slate-900 p-2"/><small className="ml-3 text-slate-500">設定する場合は2年以内</small></label><fieldset><legend className="mb-2 font-bold">送信対象</legend><div className="grid gap-2 sm:grid-cols-2">{groups.map((group) => <label key={group.id} className="rounded-xl border border-sky-100 bg-white shadow-sm p-3"><input type="checkbox" checked={groupIDs.includes(group.id)} onChange={() => toggleGroup(group.id)} className="mr-2"/>{group.name}</label>)}</div></fieldset><button disabled={submitting || !title.trim() || !content.trim() || groupIDs.length === 0} className="w-full rounded bg-sky-600 text-white p-3 font-bold disabled:opacity-40">{submitting ? "送信中..." : "対象者へ送信"}</button></form></main>;
+  return <main className="min-h-dvh bg-transparent p-6 text-slate-900"><form onSubmit={submit} className="mx-auto max-w-2xl space-y-5"><h1 className="text-2xl font-bold">学校連絡を作成</h1>{error && <p role="alert" className="text-red-600">{error}</p>}<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="タイトル" maxLength={200} className="w-full rounded bg-white border border-slate-300 text-slate-900 p-3"/><textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="本文" rows={8} className="w-full rounded bg-white border border-slate-300 text-slate-900 p-3"/><div className="grid grid-cols-2 gap-3"><select value={type} onChange={(e) => setType(e.target.value as typeof type)} className="rounded bg-white border border-slate-300 text-slate-900 p-3"><option value="notice">お知らせ</option><option value="emergency">緊急連絡</option></select><select value={priority} onChange={(e) => setPriority(e.target.value as typeof priority)} className="rounded bg-white border border-slate-300 text-slate-900 p-3"><option value="normal">通常</option><option value="important">重要</option><option value="urgent">緊急</option></select></div><label className="block">有効期限<input type="datetime-local" min={dateTimeLimit(0)} max={dateTimeLimit(2)} value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} className="ml-3 rounded bg-white border border-slate-300 text-slate-900 p-2"/><small className="ml-3 text-slate-500">設定する場合は2年以内</small></label><fieldset><legend className="mb-2 font-bold">送信対象</legend><div className="grid gap-2 sm:grid-cols-2">{groups.map((group) => <label key={group.id} className="rounded-xl border border-sky-100 bg-white shadow-sm p-3"><input type="checkbox" checked={groupIDs.includes(group.id)} onChange={() => toggleGroup(group.id)} className="mr-2"/>{group.name}</label>)}</div></fieldset><AttachmentPicker files={files} onChange={setFiles} disabled={submitting}/><button disabled={submitting || !title.trim() || !content.trim() || groupIDs.length === 0 || !attachmentsAreValid(files)} className="w-full rounded bg-sky-600 text-white p-3 font-bold disabled:opacity-40">{submitting ? "送信中..." : "対象者へ送信"}</button></form></main>;
 };

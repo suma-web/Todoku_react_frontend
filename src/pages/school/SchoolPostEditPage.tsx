@@ -6,6 +6,9 @@ import {
   updateSchoolPost,
   type SchoolPostInput,
 } from "../../api/schoolPosts";
+import { uploadAttachments } from "../../api/attachments";
+import { AttachmentPicker } from "../../components/school/AttachmentPicker";
+import { attachmentsAreValid } from "../../utils/attachmentValidation";
 
 const localDateTime = (value: string | null) => {
   if (!value) return "";
@@ -30,6 +33,7 @@ export const SchoolPostEditPage = () => {
   const [expiresAt, setExpiresAt] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -82,6 +86,7 @@ export const SchoolPostEditPage = () => {
         ...form,
         expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       });
+      await uploadAttachments("school-posts", postID, files);
       navigate(`/school-posts/${postID}`, { replace: true });
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "編集できませんでした");
@@ -127,7 +132,8 @@ export const SchoolPostEditPage = () => {
             {groups.map((group) => <label key={group.id} className="rounded-xl border border-sky-100 bg-white p-3"><input type="checkbox" checked={form.group_ids.includes(group.id)} onChange={() => toggleGroup(group.id)} className="mr-2" />{group.name}</label>)}
           </div>
         </fieldset>
-        <button disabled={submitting || !form.title.trim() || !form.content.trim() || form.group_ids.length === 0} className="w-full rounded bg-sky-600 p-3 font-bold text-white disabled:opacity-40">{submitting ? "更新中..." : "連絡内容を更新"}</button>
+        <AttachmentPicker files={files} onChange={setFiles} disabled={submitting} />
+        <button disabled={submitting || !form.title.trim() || !form.content.trim() || form.group_ids.length === 0 || !attachmentsAreValid(files)} className="w-full rounded bg-sky-600 p-3 font-bold text-white disabled:opacity-40">{submitting ? "更新中..." : "連絡内容を更新"}</button>
       </form>
     </main>
   );
