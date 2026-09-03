@@ -1,5 +1,7 @@
 # 学校内情報・コミュニケーション基盤 Frontend
 
+[![Frontend CI](https://github.com/suma-web/Todoku_react_frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/suma-web/Todoku_react_frontend/actions/workflows/ci.yml)
+
 学校内に分散している連絡・質問・相談を一つに集約し、必要な情報へアクセスしやすくするためのWebアプリケーションのフロントエンドです。
 
 [本番環境](https://todoku-service.com) | [バックエンド](https://github.com/suma-web/Todoku_golang_backend) | [デモ動画](https://github.com/suma-web/Todoku_react_frontend/releases/tag/demo-v1.0)
@@ -119,13 +121,19 @@ cp .env.example .env
 
 ```bash
 npm run lint
+npm run test:coverage
 npm run build
 ```
+
+2026年9月4日時点で、認証API、Role別ルート、添付入力制限の13テストが全件成功しています。重点対象3モジュールのステートメントカバレッジは92%です。
+
+テスト対象、カバレッジ範囲、実行結果の詳細は[テスト方針と結果](docs/TESTING.md)を参照してください。
 
 Docker上で確認する場合：
 
 ```bash
 docker compose exec -T app npm run lint
+docker compose exec -T app npm run test:coverage
 docker compose exec -T app npm run build
 ```
 
