@@ -131,6 +131,17 @@ docker compose run --rm -e DEMO_SEED=true backend go run ./cmd/seed
 
 seed実行時に、デモ用のメールアドレスと初期パスワードが表示されます。詳細なアカウント一覧と操作シナリオはバックエンドの`docs/DEMO.md`を参照してください。
 
+## デモ動画
+
+[Todoku Demo v1.0](https://github.com/suma-web/Todoku_react_frontend/releases/tag/demo-v1.0)で、Role別のログインと主要操作を確認できます。
+
+- 管理者・教員・生徒のログイン
+- 管理者・教員・生徒の主要機能
+- 管理者による学校連絡管理
+- 管理者による質問カテゴリ管理
+
+動画はリポジトリのcloneサイズを増やさないよう、GitHub Releaseのアセットとして管理しています。
+
 ## 主なディレクトリ構成
 
 ```text
