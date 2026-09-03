@@ -129,6 +129,8 @@ npm run build
 
 テスト対象、カバレッジ範囲、実行結果の詳細は[テスト方針と結果](docs/TESTING.md)を参照してください。
 
+本番相当環境では、1校平均約645ユーザーを想定したk6負荷試験も実施しています。通常利用・緊急一斉アクセスの実測結果とCloudWatchによる原因切り分けは、[バックエンドREADMEの負荷試験・性能改善](https://github.com/suma-web/Todoku_golang_backend#負荷試験性能改善)に掲載しています。
+
 Docker上で確認する場合：
 
 ```bash
