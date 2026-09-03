@@ -2,6 +2,14 @@
 
 学校内に分散している連絡・質問・相談を一つに集約し、必要な情報へアクセスしやすくするためのWebアプリケーションのフロントエンドです。
 
+[本番環境](https://todoku-service.com) | [バックエンド](https://github.com/suma-web/Todoku_golang_backend) | [デモ動画](https://github.com/suma-web/Todoku_react_frontend/releases/tag/demo-v1.0)
+
+## 画面イメージ
+
+| ログイン画面 | 管理者ホーム画面 |
+| --- | --- |
+| ![Todokuのログイン画面](docs/screenshots/login.png) | ![Todokuの管理者ホーム画面](docs/screenshots/admin-home.png) |
+
 ## 解決したい課題
 
 - Classroom、メール、口頭など、情報経路が複数の場所に分散している
@@ -48,6 +56,8 @@
 - React Router 7.18
 - Tailwind CSS 4
 - Docker / Docker Compose
+
+バックエンドにはGo、PostgreSQL、AWS ECS、Amazon S3を使用しています。API・データモデル・AWS構成は[バックエンドリポジトリ](https://github.com/suma-web/Todoku_golang_backend)で説明しています。
 
 ## セットアップ
 
