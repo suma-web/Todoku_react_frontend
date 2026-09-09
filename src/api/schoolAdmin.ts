@@ -45,3 +45,13 @@ export const updateManagedUser = (user: ManagedUser) =>
       body: JSON.stringify({ role: user.role, is_active: user.is_active }),
     }),
   );
+
+export const deleteManagedUser = async (id: number): Promise<void> => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/users/${id}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (response.ok) return;
+  const body = await response.json().catch(() => null);
+  throw new Error(body?.error?.message ?? "アカウントを削除できませんでした");
+};
