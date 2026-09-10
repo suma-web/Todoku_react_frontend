@@ -6,7 +6,7 @@
 
 学習用Webアプリを基盤に学校向けサービスとして再設計し、要件定義2日・主要機能の実装4日・テスト2日の計8稼働日で集中開発しました。その後もAWSへのデプロイ、CI、負荷試験、セキュリティ改善を継続しています。
 
-[本番環境](https://todoku-service.com) | [バックエンド](https://github.com/suma-web/Todoku_golang_backend) | [デモ動画](https://github.com/suma-web/Todoku_react_frontend/releases/tag/demo-v1.0)
+[本番環境](https://todoku-service.com) | [バックエンド](https://github.com/suma-web/Todoku_golang_backend) | [60秒デモ動画](https://github.com/suma-web/Todoku_react_frontend/releases/download/demo-v1.0/todoku-demo-60sec.mp4)
 
 ## 画面イメージ
 
@@ -161,12 +161,9 @@ seed実行時に、デモ用のメールアドレスと初期パスワードが�
 
 ## デモ動画
 
-[Todoku Demo v1.0](https://github.com/suma-web/Todoku_react_frontend/releases/tag/demo-v1.0)で、Role別のログインと主要操作を確認できます。
+[Todoku 60秒デモを見る](https://github.com/suma-web/Todoku_react_frontend/releases/download/demo-v1.0/todoku-demo-60sec.mp4)
 
-- 管理者・教員・生徒のログイン
-- 管理者・教員・生徒の主要機能
-- 管理者による学校連絡管理
-- 管理者による質問カテゴリ管理
+管理者によるユーザー・所属管理、教員による学校連絡の作成、生徒による連絡確認と既読操作、教員による既読・未読状況の確認、質問・回答機能を約60秒で紹介しています。
 
 動画はリポジトリのcloneサイズを増やさないよう、GitHub Releaseのアセットとして管理しています。
 
