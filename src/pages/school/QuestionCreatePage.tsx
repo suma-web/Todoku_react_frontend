@@ -55,7 +55,7 @@ export const QuestionCreatePage = () => {
     </select>
     <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="タイトル" className="w-full rounded border border-slate-300 bg-white p-3 text-slate-900" />
     <textarea value={content} onChange={(event) => setContent(event.target.value)} placeholder="質問内容" rows={8} className="w-full rounded border border-slate-300 bg-white p-3 text-slate-900" />
-    <fieldset className="flex gap-5"><label><input type="radio" checked={visibility === "public"} onChange={() => setVisibility("public")} /> 公開質問</label><label><input type="radio" checked={visibility === "private"} onChange={() => setVisibility("private")} /> 個別相談</label></fieldset>
+    <fieldset className="flex gap-5"><label><input type="radio" checked={visibility === "public"} onChange={() => setVisibility("public")} /> 公開質問</label><label><input type="radio" checked={visibility === "private"} onChange={() => setVisibility("private")} /> 非公開相談</label></fieldset>
     <AttachmentPicker files={files} onChange={setFiles} disabled={submitting} />
     <button disabled={submitting || !category || !title.trim() || !content.trim() || !attachmentsAreValid(files)} className="w-full rounded bg-sky-600 p-3 font-bold text-white disabled:opacity-40">{submitting ? "送信中..." : "送信する"}</button>
   </form></main>;

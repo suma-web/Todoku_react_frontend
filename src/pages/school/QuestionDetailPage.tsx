@@ -57,7 +57,7 @@ export const QuestionDetailPage = () => {
         <h1 className="mt-2 text-2xl font-bold">{question.title}</h1>
         <p className="mt-4 whitespace-pre-wrap">{question.content}</p>
         <AttachmentList parent="questions" id={question.id} />
-        <p className="mt-3 text-sm text-slate-500">質問者：{question.user_name}・{question.visibility === "private" ? "個別相談" : "公開質問"}</p>
+        <p className="mt-3 text-sm text-slate-500">質問者：{question.user_name}・{question.visibility === "private" ? "非公開相談" : "公開質問"}</p>
         {question.answers?.map((item) => (
           <article key={item.id} className="mt-5 rounded-2xl border border-sky-100 bg-white p-4 shadow-sm">
             <strong>{item.user_name}からの回答</strong>
