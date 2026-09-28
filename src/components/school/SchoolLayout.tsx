@@ -1,3 +1,4 @@
+import { NotificationBell } from "./NotificationBell";
 import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { logout } from "../../api/user";
@@ -48,6 +49,10 @@ export const SchoolLayout = () => {
   return (
     <div className="min-h-dvh bg-[#F4F8FC] text-[#16324F]">
       <header className="sticky top-0 z-20 border-b border-sky-100 bg-white/95 shadow-sm backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center justify-end gap-3 px-3 pt-2">
+          {user && <NotificationBell key={user.id} />}
+          <span className="max-w-48 truncate text-sm font-medium" title={user?.name}>{user?.name}</span>
+        </div>
         <nav className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto p-3">
           {links.map((link) => (
             <NavLink

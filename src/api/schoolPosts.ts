@@ -1,6 +1,11 @@
 import { API_BASE_URL } from "./base";
 
 export type SchoolPost = {
+  previous_post_id?: number | null;
+  latest_post_id?: number | null;
+  superseded?: boolean;
+  can_view_previous?: boolean;
+  change_summary?: string;
   id: number;
   author_id: number;
   author_name: string;
@@ -49,7 +54,7 @@ export const createSchoolPost = (input: SchoolPostInput) =>
     }),
   );
 
-export const updateSchoolPost = (id: number, input: SchoolPostInput) =>
+export const updateSchoolPost = (id: number, input: SchoolPostInput & { notify?: boolean; change_summary?: string }) =>
   read<SchoolPost>(
     fetch(`${API_BASE_URL}/api/school-posts/${id}`, {
       method: "PATCH",
